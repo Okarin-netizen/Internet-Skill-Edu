@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>C2 確かめる方法</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap">
+<link rel="stylesheet" href="../../assets/ui.css">
+</head>
+<body>
+<main class="app" id="app" lang="ja"></main>
+<script src="../../assets/units.js"></script>
+<script src="../../assets/engine.js"></script>
+<script>
+var ui = Unit.ui;
+Unit.run({
+  code: "C2",
+  lead: "AIの{答|こた}えがあやしいとき、どうすればよいでしょうか。",
+  activity: {
+    type: "judge",
+    prompt: "AIがこう{答|こた}えました。あなたならどうしますか。",
+    cards: [
+      { html: ui.scene("chip", "AI「{明日|あした}の{時間割|じかんわり}は{変|か}わりました」"),
+        options: ["そのまま{信|しん}じる", "{先生|せんせい}に{聞|き}く", "{友|とも}だちに{広|ひろ}める"], answer: 1,
+        why: "{学校|がっこう}のことは、{先生|せんせい}に{聞|き}くのがいちばん{確|たし}かです。" },
+      { html: ui.scene("chip", "AI「この{薬|くすり}は1{日|にち}10{回|かい}{飲|の}みます」"),
+        options: ["そのとおりに{飲|の}む", "{家|いえ}の{人|ひと}や{説明書|せつめいしょ}で{確|たし}かめる", "{気|き}にしない"], answer: 1,
+        why: "{体|からだ}に{関|かか}わることは、まちがえると{危|あぶ}ないので{必|かなら}ず{確|たし}かめます。" },
+      { html: ui.scene("chip", "AI「ペンギンは{空|そら}を{飛|と}べます」"),
+        options: ["{図鑑|ずかん}や{本|ほん}で{調|しら}べる", "{発表|はっぴょう}で{使|つか}う"], answer: 0,
+        why: "{図鑑|ずかん}を{見|み}ると、ペンギンは{飛|と}べないことが{分|わ}かります。" }
+    ],
+    after: "AIの{答|こた}えは、{人|ひと}に{聞|き}いたり、{本|ほん}で{調|しら}べたりして{確|たし}かめましょう。"
+  },
+  quiz: [{
+    q: "AIの{答|こた}えを{確|たし}かめる{方法|ほうほう}として、よいのはどれでしょうか。",
+    options: [
+      { t: "{同|おな}じAIに、もう{一度|いちど}{聞|き}くだけ" },
+      { t: "{先生|せんせい}や{家|いえ}の{人|ひと}に{聞|き}く、{本|ほん}で{調|しら}べる", correct: true }
+    ],
+    right: "{正解|せいかい}です。AIとは{別|べつ}の{方法|ほうほう}で{確|たし}かめることが{大切|たいせつ}です。",
+    wrong: "{同|おな}じAIは、また{同|おな}じまちがいをするかもしれません。"
+  }],
+  summary: {
+    headline: "AIの{答|こた}えは、{人|ひと}に{聞|き}く・{本|ほん}で{調|しら}べるなど、{別|べつ}の{方法|ほうほう}で{確|たし}かめます。",
+    words: [
+      { icon: "teacher", term: "{人|ひと}に{聞|き}く", desc: "{先生|せんせい}や{家|いえ}の{人|ひと}など、{信頼|しんらい}できる{大人|おとな}に{聞|き}くこと" },
+      { icon: "book", term: "{本|ほん}で{調|しら}べる", desc: "{図鑑|ずかん}や{教科書|きょうかしょ}など、{確|たし}かな{情報|じょうほう}を{見|み}ること" }
+    ]
+  }
+});
+</script>
+</body>
+</html>

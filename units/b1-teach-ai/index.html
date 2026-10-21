@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>B1 AIに教えよう</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap">
+<link rel="stylesheet" href="../../assets/ui.css">
+</head>
+<body>
+<main class="app" id="app" lang="ja"></main>
+<script src="../../assets/units.js"></script>
+<script src="../../assets/engine.js"></script>
+<script>
+var ui = Unit.ui;
+Unit.run({
+  code: "B1",
+  lead: "AIは、どうやってねこと{犬|いぬ}を{見分|みわ}けられるようになるのでしょうか。",
+  activity: {
+    type: "train",
+    teach: "sort",
+    train: [
+      { kind: "cat", ear: 1, light: 0.95 }, { kind: "cat", ear: 1, light: 0.1 }, { kind: "cat", ear: 1, light: 0.55 },
+      { kind: "dog", ear: 0, light: 0.95 }, { kind: "dog", ear: 0, light: 0.1 }, { kind: "dog", ear: 0, light: 0.5 }
+    ],
+    test: [
+      { kind: "cat", ear: 1, light: 0.75 }, { kind: "dog", ear: 0, light: 0.3 }, { kind: "cat", ear: 1, light: 0.25 }
+    ],
+    texts: {
+      teach: "AIに{教|おし}えるための{写真|しゃしん}です。1{枚|まい}ずつ、ねこか{犬|いぬ}の{箱|はこ}に{分|わ}けてください。",
+      learned: "AIは、あなたが{分|わ}けた{写真|しゃしん}から{見分|みわ}け{方|かた}を{学|まな}びました。「AIをテストする」を{押|お}してください。",
+      test: "AIが{見|み}たことのない{写真|しゃしん}です。タッチして、AIに{答|こた}えさせてください。",
+      after: "AIは{全部|ぜんぶ}{当|あ}てました。たくさんの{例|れい}から、{耳|みみ}の{形|かたち}などの{違|ちが}いを{学|まな}んだからです。"
+    }
+  },
+  quiz: [{
+    q: "AIは、どうやって{見分|みわ}けられるようになったでしょうか。",
+    options: [
+      { t: "{最初|さいしょ}から{全部|ぜんぶ}{知|し}っていた" },
+      { t: "{人|ひと}が{分|わ}けた{例|れい}から{学|まな}んだ", correct: true }
+    ],
+    right: "{正解|せいかい}です。AIは{例|れい}（データ）から{学|まな}びます。",
+    wrong: "あなたが{写真|しゃしん}を{分|わ}けてから、AIが{答|こた}えられるようになりましたね。"
+  }],
+  summary: {
+    headline: "AIは、たくさんの{例|れい}から{見分|みわ}け{方|かた}を{学|まな}びます。",
+    words: [
+      { icon: "data", term: "データ", desc: "AIが{学|まな}ぶための{例|れい}" },
+      { icon: "chip", term: "{学習|がくしゅう}", desc: "{例|れい}をたくさん{見|み}て、{見分|みわ}け{方|かた}を{身|み}につけること" }
+    ]
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>D2 あやしいメッセージ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap">
+<link rel="stylesheet" href="../../assets/ui.css">
+</head>
+<body>
+<main class="app" id="app" lang="ja"></main>
+<script src="../../assets/units.js"></script>
+<script src="../../assets/engine.js"></script>
+<script>
+var ui = Unit.ui;
+Unit.run({
+  code: "D2",
+  lead: "{知|し}らない{人|ひと}からメッセージが{届|とど}いたら、どうすればよいでしょうか。",
+  activity: {
+    type: "judge",
+    prompt: "このメッセージが{届|とど}きました。どうしますか。",
+    options: ["リンクを{開|ひら}く・{返事|へんじ}する", "{開|ひら}かずに{大人|おとな}に{相談|そうだん}する"],
+    cards: [
+      { html: ui.chat("{知|し}らない{人|ひと}", "おめでとうございます！{当選|とうせん}しました。ここをタッチして{受|う}け{取|と}ってください → http://..."), answer: 1,
+        why: "{当選|とうせん}をよそおって、{情報|じょうほう}やお{金|かね}をだまし{取|と}るメッセージかもしれません。", hint: "{応募|おうぼ}していないのに{当選|とうせん}するでしょうか。" },
+      { html: ui.chat("{知|し}らない{人|ひと}", "{同|おな}じ{中学|ちゅうがく}だよね？{写真|しゃしん}を{送|おく}って"), answer: 1,
+        why: "{知|し}らない{人|ひと}に{写真|しゃしん}を{送|おく}ってはいけません。{同|おな}じ{学校|がっこう}のふりをしているかもしれません。", hint: "{本当|ほんとう}に{同|おな}じ{学校|がっこう}の{人|ひと}か、{分|わ}かるでしょうか。" },
+      { html: ui.chat("お{母|かあ}さん", "{今日|きょう}は6{時|じ}に{帰|かえ}ります", "home"), answer: 0,
+        why: "{知|し}っている{家族|かぞく}からの、ふつうのメッセージです。{返事|へんじ}をして{大丈夫|だいじょうぶ}です。", hint: "{送|おく}ってきたのはだれでしょうか。" },
+      { html: ui.chat("ゲームの{運営|うんえい}？", "アカウントが{止|と}まります。{今|いま}すぐパスワードを{入力|にゅうりょく}してください", "warn"), answer: 1,
+        why: "{本物|ほんもの}のふりをしてパスワードを{盗|ぬす}む「なりすまし」かもしれません。", hint: "「{今|いま}すぐ」とあせらせるメッセージは{要注意|ようちゅうい}です。" }
+    ],
+    after: "あやしいと{思|おも}ったら、リンクを{開|ひら}かず、{返事|へんじ}もせず、{家|いえ}の{人|ひと}や{先生|せんせい}に{見|み}せましょう。"
+  },
+  quiz: [{
+    q: "{知|し}らない{人|ひと}からあやしいメッセージが{来|き}たら、どうしますか。",
+    options: [
+      { t: "リンクを{開|ひら}いて{確|たし}かめる" },
+      { t: "{開|ひら}かずに、{大人|おとな}に{相談|そうだん}する", correct: true }
+    ],
+    right: "{正解|せいかい}です。{開|ひら}くだけで{危|あぶ}ないこともあります。",
+    wrong: "リンクを{開|ひら}くと、だまされることがあります。"
+  }],
+  summary: {
+    headline: "あやしいメッセージは{開|ひら}かず、{返事|へんじ}をせず、{大人|おとな}に{相談|そうだん}します。",
+    words: [
+      { icon: "link", term: "リンク", desc: "タッチすると{別|べつ}のページが{開|ひら}く{文字|もじ}。あやしいものは{開|ひら}かない" },
+      { icon: "unknown", term: "なりすまし", desc: "ほかの{人|ひと}や{会社|かいしゃ}のふりをすること" }
+    ]
+  }
+});
+</script>
+</body>
+</html>

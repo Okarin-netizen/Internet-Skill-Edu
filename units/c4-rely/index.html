@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>C4 AIにまかせすぎない</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap">
+<link rel="stylesheet" href="../../assets/ui.css">
+</head>
+<body>
+<main class="app" id="app" lang="ja"></main>
+<script src="../../assets/units.js"></script>
+<script src="../../assets/engine.js"></script>
+<script>
+var ui = Unit.ui;
+Unit.run({
+  code: "C4",
+  lead: "AIに{何|なに}でもまかせてよいのでしょうか。",
+  activity: {
+    type: "sort",
+    intro: "{自分|じぶん}でやることと、AIに{相談|そうだん}してもよいことに{分|わ}けてください。",
+    bins: ["{自分|じぶん}でやる", "AIに{相談|そうだん}してもよい"],
+    cards: [
+      { icon: "pencil", label: "{作文|さくぶん}の{宿題|しゅくだい}を{書|か}く", bin: 0, why: "{作文|さくぶん}は、{自分|じぶん}の{考|かんが}えを{書|か}く{練習|れんしゅう}です。{自分|じぶん}で{書|か}きます。" },
+      { icon: "book", label: "{漢字|かんじ}の{読|よ}み{方|かた}を{調|しら}べる", bin: 1, why: "{調|しら}べものの{手伝|てつだ}いは、AIに{相談|そうだん}してもよいです。" },
+      { icon: "heart", label: "{友|とも}だちへの{手紙|てがみ}を{書|か}く", bin: 0, why: "{自分|じぶん}の{気持|きも}ちは、{自分|じぶん}の{言葉|ことば}で{伝|つた}えます。" },
+      { icon: "food", label: "{料理|りょうり}のアイデアを{出|だ}す", bin: 1, why: "アイデアを{出|だ}す{手伝|てつだ}いは、AIに{相談|そうだん}してもよいです。" },
+      { icon: "person", label: "{自分|じぶん}の{将来|しょうらい}の{夢|ゆめ}を{決|き}める", bin: 0, why: "{大切|たいせつ}なことは、{自分|じぶん}で{考|かんが}えて{決|き}めます。" },
+      { icon: "translate", label: "{英単語|えいたんご}の{意味|いみ}を{調|しら}べる", bin: 1, why: "{意味|いみ}を{調|しら}べる{手伝|てつだ}いは、AIに{相談|そうだん}してもよいです。" }
+    ],
+    after: "{考|かんが}えることや{気持|きも}ちを{伝|つた}えることは{自分|じぶん}で、{調|しら}べものやアイデア{出|だ}しはAIに{手伝|てつだ}ってもらう、という{使|つか}い{分|わ}けが{大切|たいせつ}です。"
+  },
+  quiz: [{
+    q: "AIとの{上手|じょうず}な{付|つ}き{合|あ}い{方|かた}はどれでしょうか。",
+    options: [
+      { t: "{宿題|しゅくだい}も{全部|ぜんぶ}AIにやってもらう" },
+      { t: "{考|かんが}えることは{自分|じぶん}で、{手伝|てつだ}いはAIに{頼|たの}む", correct: true }
+    ],
+    right: "{正解|せいかい}です。AIは{上手|じょうず}に{使|つか}えば{役|やく}に{立|た}つ{道具|どうぐ}です。",
+    wrong: "{全部|ぜんぶ}まかせると、{自分|じぶん}の{力|ちから}がつきませんね。"
+  }],
+  summary: {
+    headline: "{考|かんが}えることは{自分|じぶん}で。AIは{手伝|てつだ}いをしてもらう{道具|どうぐ}として{使|つか}います。",
+    words: [
+      { icon: "person", term: "{自分|じぶん}で{考|かんが}える", desc: "{作文|さくぶん}や{気持|きも}ち、{大切|たいせつ}な{決定|けってい}は{自分|じぶん}でする" },
+      { icon: "chip", term: "{道具|どうぐ}として{使|つか}う", desc: "{調|しら}べものやアイデア{出|だ}しを{手伝|てつだ}ってもらう" }
+    ]
+  }
+});
+</script>
+</body>
+</html>

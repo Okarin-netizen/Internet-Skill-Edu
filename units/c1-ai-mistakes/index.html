@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>C1 AIもまちがえる</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap">
+<link rel="stylesheet" href="../../assets/ui.css">
+</head>
+<body>
+<main class="app" id="app" lang="ja"></main>
+<script src="../../assets/units.js"></script>
+<script src="../../assets/engine.js"></script>
+<script>
+var ui = Unit.ui;
+Unit.run({
+  code: "C1",
+  lead: "AIの{答|こた}えは、いつも{正|ただ}しいのでしょうか。",
+  activity: {
+    type: "judge",
+    prompt: "AIの{答|こた}えを{読|よ}んで、{正|ただ}しいか、あやしいかを{選|えら}んでください。",
+    options: ["{正|ただ}しい", "あやしい"],
+    cards: [
+      { html: ui.ai("{日本|にほん}でいちばん{高|たか}い{山|やま}は？", "{富士山|ふじさん}です。{高|たか}さは3776メートルです。"), answer: 0,
+        why: "そのとおりです。ただし、{正|ただ}しいかどうかは{本|ほん}などで{確|たし}かめると{安心|あんしん}です。", hint: "{富士山|ふじさん}は{本当|ほんとう}に{日本|にほん}でいちばん{高|たか}い{山|やま}です。" },
+      { html: ui.ai("1{年|ねん}は{何日|なんにち}？", "1{年|ねん}は300{日|にち}です。"), answer: 1,
+        why: "1{年|ねん}は365{日|にち}です。AIは{自信|じしん}がありそうに、まちがえることがあります。", hint: "カレンダーを{思|おも}い{出|だ}してみましょう。" },
+      { html: ui.ai("わたしの{学校|がっこう}の{校長先生|こうちょうせんせい}の{名前|なまえ}は？", "{山田花子|やまだはなこ}{先生|せんせい}です。"), answer: 1,
+        why: "AIは{知|し}らないことでも、それらしい{名前|なまえ}を{作|つく}って{答|こた}えることがあります。", hint: "AIはあなたの{学校|がっこう}のことを{知|し}っているでしょうか。" }
+    ],
+    after: "AIの{答|こた}えには、まちがいが{混|ま}じることがあります。{自信|じしん}がありそうでも、そのまま{信|しん}じないようにしましょう。"
+  },
+  quiz: [{
+    q: "AIの{答|こた}えは、どう{受|う}け{取|と}ればよいでしょうか。",
+    options: [
+      { t: "AIはいつも{正|ただ}しいので、そのまま{信|しん}じる" },
+      { t: "まちがいもあるので、{確|たし}かめる", correct: true }
+    ],
+    right: "{正解|せいかい}です。{確|たし}かめ{方|かた}は、{次|つぎ}の{単元|たんげん}で{学|まな}びます。",
+    wrong: "1{年|ねん}が300{日|にち}という{答|こた}えもありましたね。"
+  }],
+  summary: {
+    headline: "AIもまちがえます。{答|こた}えをそのまま{信|しん}じず、{確|たし}かめることが{大切|たいせつ}です。",
+    words: [
+      { icon: "warn", term: "それらしい{答|こた}え", desc: "{本当|ほんとう}っぽく{見|み}えるが、まちがっている{答|こた}え" },
+      { icon: "search", term: "{確|たし}かめる", desc: "{本|ほん}や{人|ひと}など、AI{以外|いがい}でも{調|しら}べること" }
+    ]
+  }
+});
+</script>
+</body>
+</html>

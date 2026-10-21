@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>A3 ウェブページはどこにある？</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap">
+<link rel="stylesheet" href="../../assets/ui.css">
+</head>
+<body>
+<main class="app" id="app" lang="ja"></main>
+<script src="../../assets/units.js"></script>
+<script src="../../assets/engine.js"></script>
+<script>
+var ui = Unit.ui;
+Unit.run({
+  code: "A3",
+  lead: "タブレットで{開|ひら}くウェブページは、どこに{置|お}いてあるのでしょうか。",
+  activity: {
+    type: "relay",
+    payload: "ページをください",
+    packetIcon: "search",
+    nodes: [
+      { icon: "tablet", label: "{自分|じぶん}のタブレット" },
+      { icon: "router", label: "ルーター" },
+      { icon: "globe", label: "インターネット", sub: "{世界中|せかいじゅう}のネットワーク" },
+      { icon: "server", label: "ウェブサーバー", sub: "{遠|とお}くの{建物|たてもの}の{中|なか}" }
+    ],
+    texts: [
+      "ウェブページを{開|ひら}くと、タブレットは「ページをください」というお{願|ねが}いを{送|おく}ります。{光|ひか}っているところをタッチしてください。",
+      "ルーターを{通|とお}って、インターネットへ{出|で}ていきます。{次|つぎ}もタッチしてください。",
+      "インターネットは、{世界中|せかいじゅう}のネットワークがつながったものです。{最後|さいご}にウェブサーバーをタッチしてください。",
+      "ウェブサーバーに{着|つ}きました。ページはここに{保存|ほぞん}されていて、{同|おな}じ{道|みち}を{通|とお}ってタブレットに{送|おく}り{返|かえ}されます。"
+    ]
+  },
+  quiz: [{
+    q: "ウェブページは、どこに{保存|ほぞん}されているでしょうか。",
+    options: [
+      { t: "{自分|じぶん}のタブレットの{中|なか}" },
+      { t: "{遠|とお}くにあるウェブサーバー", correct: true }
+    ],
+    right: "{正解|せいかい}です。ページを{開|ひら}くたびに、ウェブサーバーから{送|おく}ってもらっています。",
+    wrong: "お{願|ねが}いはタブレットの{外|そと}まで{届|とど}いていましたね。"
+  }],
+  summary: {
+    headline: "ウェブページは{遠|とお}くのウェブサーバーにあり、お{願|ねが}いすると{送|おく}られてきます。",
+    words: [
+      { icon: "server", term: "ウェブサーバー", desc: "ウェブページを{保存|ほぞん}して、お{願|ねが}いされたら{送|おく}るコンピューター" },
+      { icon: "globe", term: "インターネット", desc: "{世界中|せかいじゅう}のネットワークがつながったもの" }
+    ]
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>C3 AIに教えてはいけないこと</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap">
+<link rel="stylesheet" href="../../assets/ui.css">
+</head>
+<body>
+<main class="app" id="app" lang="ja"></main>
+<script src="../../assets/units.js"></script>
+<script src="../../assets/engine.js"></script>
+<script>
+var ui = Unit.ui;
+Unit.run({
+  code: "C3",
+  lead: "AIに{質問|しつもん}するとき、{入力|にゅうりょく}してはいけないことはあるのでしょうか。",
+  activity: {
+    type: "sort",
+    intro: "AIに{入力|にゅうりょく}してよいものと、しないほうがよいものに{分|わ}けてください。",
+    bins: ["{入力|にゅうりょく}してよい", "{入力|にゅうりょく}しない"],
+    cards: [
+      { icon: "food", label: "{好|す}きな{食|た}べ{物|もの}", bin: 0, why: "だれのことか{分|わ}からないので、{入力|にゅうりょく}しても{大丈夫|だいじょうぶ}です。" },
+      { icon: "home", label: "{自分|じぶん}の{名前|なまえ}と{住所|じゅうしょ}", bin: 1, why: "{名前|なまえ}と{住所|じゅうしょ}は{個人情報|こじんじょうほう}です。{入力|にゅうりょく}しません。" },
+      { icon: "book", label: "{宿題|しゅくだい}の{問題|もんだい}の{文|ぶん}", bin: 0, why: "{個人|こじん}のことではないので、{入力|にゅうりょく}しても{大丈夫|だいじょうぶ}です。" },
+      { icon: "phone", label: "{電話番号|でんわばんごう}", bin: 1, why: "{電話番号|でんわばんごう}は{個人情報|こじんじょうほう}です。{入力|にゅうりょく}しません。" },
+      { icon: "photo", label: "{友|とも}だちの{顔|かお}{写真|しゃしん}", bin: 1, why: "{友|とも}だちの{個人情報|こじんじょうほう}です。{勝手|かって}に{入力|にゅうりょく}しません。" },
+      { icon: "key", label: "パスワード", bin: 1, why: "パスワードはだれにも{教|おし}えません。AIにも{入力|にゅうりょく}しません。" },
+      { icon: "paw", label: "{好|す}きな{動物|どうぶつ}", bin: 0, why: "だれのことか{分|わ}からないので、{入力|にゅうりょく}しても{大丈夫|だいじょうぶ}です。" }
+    ],
+    after: "{入力|にゅうりょく}したことは、AIの{会社|かいしゃ}のコンピューターに{送|おく}られます。{名前|なまえ}・{住所|じゅうしょ}・{電話番号|でんわばんごう}・パスワードなどは{入力|にゅうりょく}しません。"
+  },
+  quiz: [{
+    q: "AIに{入力|にゅうりょく}しないほうがよいものはどれでしょうか。",
+    options: [
+      { t: "{自分|じぶん}の{住所|じゅうしょ}や{電話番号|でんわばんごう}", correct: true },
+      { t: "{好|す}きな{食|た}べ{物|もの}" }
+    ],
+    right: "{正解|せいかい}です。{個人情報|こじんじょうほう}は{入力|にゅうりょく}しないようにしましょう。",
+    wrong: "{好|す}きな{食|た}べ{物|もの}だけでは、だれのことか{分|わ}かりませんね。"
+  }],
+  summary: {
+    headline: "{名前|なまえ}・{住所|じゅうしょ}・{電話番号|でんわばんごう}・パスワードなどの{個人情報|こじんじょうほう}は、AIに{入力|にゅうりょく}しません。",
+    words: [
+      { icon: "person", term: "{個人情報|こじんじょうほう}", desc: "{名前|なまえ}や{住所|じゅうしょ}など、その{人|ひと}がだれか{分|わ}かる{情報|じょうほう}" },
+      { icon: "lock", term: "パスワード", desc: "{自分|じぶん}だけが{知|し}っている{合言葉|あいことば}。だれにも{教|おし}えない" }
+    ]
+  }
+});
+</script>
+</body>
+</html>

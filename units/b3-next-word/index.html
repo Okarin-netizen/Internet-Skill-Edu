@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>B3 次の言葉を予想する</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap">
+<link rel="stylesheet" href="../../assets/ui.css">
+</head>
+<body>
+<main class="app" id="app" lang="ja"></main>
+<script src="../../assets/units.js"></script>
+<script src="../../assets/engine.js"></script>
+<script>
+var ui = Unit.ui;
+Unit.run({
+  code: "B3",
+  lead: "{文章|ぶんしょう}を{作|つく}るAIは、どうやって{文|ぶん}を{作|つく}っているのでしょうか。",
+  activity: {
+    type: "nextword",
+    start: "{今日|きょう}は",
+    tree: [
+      { w: "いい{天気|てんき}", p: 62, next: [ { w: "ですね", p: 58 }, { w: "なので{散歩|さんぽ}します", p: 30 }, { w: "だった", p: 12 } ] },
+      { w: "{雨|あめ}", p: 25, next: [ { w: "が{降|ふ}っています", p: 70 }, { w: "なので{家|いえ}にいます", p: 30 } ] },
+      { w: "テスト", p: 13, next: [ { w: "があります", p: 65 }, { w: "が{返|かえ}ってきました", p: 35 } ] }
+    ],
+    texts: {
+      start: "「{今日|きょう}は」の{次|つぎ}に{来|く}る{言葉|ことば}を{選|えら}んでください。{数字|すうじ}は、AIが「{次|つぎ}に{来|く}そう」と{予想|よそう}した{割合|わりあい}です。",
+      mid: "もう1つ{選|えら}んでください。「AIにまかせる」を{押|お}すと、AIはいちばん{数字|すうじ}が{大|おお}きい{言葉|ことば}を{選|えら}びます。",
+      end: "{文|ぶん}ができました。AIも{同|おな}じように、{次|つぎ}に{来|く}そうな{言葉|ことば}を{選|えら}んで{文|ぶん}を{作|つく}っています。{内容|ないよう}が{正|ただ}しいかどうかは{分|わ}かっていません。"
+    }
+  },
+  quiz: [{
+    q: "{文章|ぶんしょう}を{作|つく}るAIは、{何|なに}をしているでしょうか。",
+    options: [
+      { t: "{次|つぎ}に{来|く}そうな{言葉|ことば}を{選|えら}んでつなげている", correct: true },
+      { t: "{本当|ほんとう}のことだけを{調|しら}べて{書|か}いている" }
+    ],
+    right: "{正解|せいかい}です。だから、それらしくてもまちがった{文|ぶん}ができることがあります。",
+    wrong: "AIは{数字|すうじ}の{大|おお}きい{言葉|ことば}を{選|えら}んでいましたね。"
+  }],
+  summary: {
+    headline: "{文章|ぶんしょう}を{作|つく}るAIは、{次|つぎ}に{来|く}そうな{言葉|ことば}を{予想|よそう}して{文|ぶん}をつなげています。",
+    words: [
+      { icon: "chat", term: "{生成|せいせい}AI", desc: "{文章|ぶんしょう}や{絵|え}を{作|つく}り{出|だ}すAI" },
+      { icon: "chip", term: "{予想|よそう}", desc: "これまでの{例|れい}から、{次|つぎ}に{来|く}そうなものを{選|えら}ぶこと" }
+    ]
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>D4 困ったら相談</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap">
+<link rel="stylesheet" href="../../assets/ui.css">
+</head>
+<body>
+<main class="app" id="app" lang="ja"></main>
+<script src="../../assets/units.js"></script>
+<script src="../../assets/engine.js"></script>
+<script>
+var ui = Unit.ui;
+Unit.run({
+  code: "D4",
+  lead: "ネットで{困|こま}ったことが{起|お}きたら、どうすればよいでしょうか。",
+  activity: {
+    type: "judge",
+    prompt: "こんなことが{起|お}きました。どうしますか。",
+    options: ["{一人|ひとり}でがまんする", "{家|いえ}の{人|ひと}や{先生|せんせい}に{相談|そうだん}する", "ネットの{知|し}らない{人|ひと}に{相談|そうだん}する"],
+    cards: [
+      { html: ui.scene("game", "ゲームで、{知|し}らない{人|ひと}に{悪口|わるぐち}を{言|い}われた"), answer: 1,
+        why: "いやなことは、{一人|ひとり}でがまんしなくて{大丈夫|だいじょうぶ}です。{大人|おとな}に{話|はな}しましょう。" },
+      { html: ui.scene("coin", "まちがえて、お{金|かね}がかかるボタンを{押|お}してしまった"), answer: 1,
+        why: "{早|はや}く{相談|そうだん}するほど、{元|もと}にもどせることが{多|おお}いです。おこられるか{心配|しんぱい}でも、すぐに{話|はな}しましょう。" },
+      { html: ui.scene("photo", "{自分|じぶん}の{写真|しゃしん}が、{知|し}らないところにのっていた"), answer: 1,
+        why: "{大人|おとな}と{一緒|いっしょ}に、{消|け}してもらうお{願|ねが}いができます。" }
+    ],
+    hint: "{一人|ひとり}で{抱|かか}えたり、{知|し}らない{人|ひと}に{頼|たよ}ったりすると、もっと{困|こま}ることがあります。",
+    after: "ネットで{困|こま}ったら、{一人|ひとり}で{抱|かか}えず、{家|いえ}の{人|ひと}や{先生|せんせい}に{相談|そうだん}しましょう。"
+  },
+  quiz: [{
+    q: "ネットで{困|こま}ったときは、どうしますか。",
+    options: [
+      { t: "すぐに{家|いえ}の{人|ひと}や{先生|せんせい}に{相談|そうだん}する", correct: true },
+      { t: "おこられそうなので、だれにも{言|い}わない" }
+    ],
+    right: "{正解|せいかい}です。{相談|そうだん}するのは{悪|わる}いことではありません。",
+    wrong: "{早|はや}く{相談|そうだん}したほうが、{解決|かいけつ}しやすくなります。"
+  }],
+  summary: {
+    headline: "ネットで{困|こま}ったら、{一人|ひとり}で{抱|かか}えず、{家|いえ}の{人|ひと}や{先生|せんせい}に{相談|そうだん}します。",
+    words: [
+      { icon: "teacher", term: "{相談|そうだん}", desc: "{困|こま}ったことを{話|はな}して、{一緒|いっしょ}に{考|かんが}えてもらうこと" },
+      { icon: "home", term: "{相談|そうだん}できる{人|ひと}", desc: "{家|いえ}の{人|ひと}、{担任|たんにん}の{先生|せんせい}、{保健室|ほけんしつ}の{先生|せんせい}など" }
+    ]
+  }
+});
+</script>
+</body>
+</html>
