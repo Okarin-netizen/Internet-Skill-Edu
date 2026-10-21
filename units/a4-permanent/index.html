@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>A4 一度出したらもどらない</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap">
+<link rel="stylesheet" href="../../assets/ui.css">
+</head>
+<body>
+<main class="app" id="app" lang="ja"></main>
+<script src="../../assets/units.js"></script>
+<script src="../../assets/engine.js"></script>
+<script>
+var ui = Unit.ui;
+Unit.run({
+  code: "A4",
+  lead: "インターネットに{投稿|とうこう}した{写真|しゃしん}は、{消|け}せば{終|お}わりでしょうか。",
+  activity: {
+    type: "spread",
+    texts: [
+      "{自分|じぶん}の{写真|しゃしん}をSNSに{投稿|とうこう}します。「{投稿|とうこう}する」を{押|お}してください。",
+      "{投稿|とうこう}しました。{見|み}た{人|ひと}が{写真|しゃしん}を{保存|ほぞん}するかもしれません。「{次|つぎ}の{日|ひ}へ」を{押|お}してください。",
+      "2{人|にん}がコピーして、{自分|じぶん}の{投稿|とうこう}にのせました。さらに{次|つぎ}の{日|ひ}へ{進|すす}めましょう。",
+      "コピーを{見|み}た{人|ひと}が、またコピーしました。もう{一日|いちにち}{進|すす}めます。",
+      "{写真|しゃしん}が{広|ひろ}がりました。では、{自分|じぶん}の{投稿|とうこう}を{消|け}してみましょう。",
+      "{自分|じぶん}の{投稿|とうこう}は{消|き}えましたが、ほかの{人|ひと}がコピーした{写真|しゃしん}は{残|のこ}ったままです。"
+    ],
+    buttons: ["{投稿|とうこう}する", "{次|つぎ}の{日|ひ}へ", "{次|つぎ}の{日|ひ}へ", "{次|つぎ}の{日|ひ}へ", "{自分|じぶん}の{投稿|とうこう}を{消|け}す"]
+  },
+  quiz: [{
+    q: "{自分|じぶん}の{投稿|とうこう}を{消|け}すと、{写真|しゃしん}はどうなったでしょうか。",
+    options: [
+      { t: "すべての{画面|がめん}から{消|き}える" },
+      { t: "コピーされた{写真|しゃしん}は{残|のこ}る", correct: true }
+    ],
+    right: "{正解|せいかい}です。だから、{投稿|とうこう}する{前|まえ}によく{考|かんが}えることが{大切|たいせつ}です。",
+    wrong: "{消|け}したあとも、ほかの{画面|がめん}に{写真|しゃしん}が{残|のこ}っていましたね。"
+  }],
+  summary: {
+    headline: "ネットに{出|だ}した{写真|しゃしん}はコピーされて{広|ひろ}がり、{全部|ぜんぶ}を{消|け}すことはできません。",
+    words: [
+      { icon: "copy", term: "{拡散|かくさん}", desc: "コピーされて、たくさんの{人|ひと}に{広|ひろ}がること" },
+      { icon: "photo", term: "デジタルタトゥー", desc: "ネットに{一度|いちど}{出|で}ると、{消|け}えずに{残|のこ}り{続|つづ}ける{情報|じょうほう}" }
+    ]
+  }
+});
+</script>
+</body>
+</html>

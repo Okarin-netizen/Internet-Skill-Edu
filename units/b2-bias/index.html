@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>B2 かたよった学び</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap">
+<link rel="stylesheet" href="../../assets/ui.css">
+</head>
+<body>
+<main class="app" id="app" lang="ja"></main>
+<script src="../../assets/units.js"></script>
+<script src="../../assets/engine.js"></script>
+<script>
+var ui = Unit.ui;
+Unit.run({
+  code: "B2",
+  lead: "AIが{学|まな}ぶ{例|れい}がかたよっていると、どうなるでしょうか。",
+  activity: {
+    type: "train",
+    teach: "given",
+    train: [
+      { kind: "cat", ear: 1, light: 0.95 }, { kind: "cat", ear: 1, light: 0.9 }, { kind: "cat", ear: 1, light: 0.92 },
+      { kind: "dog", ear: 0, light: 0.35 }, { kind: "dog", ear: 0, light: 0.3 }, { kind: "dog", ear: 0, light: 0.4 }
+    ],
+    test: [
+      { kind: "cat", ear: 1, light: 0.9 }, { kind: "dog", ear: 0, light: 0.35 }, { kind: "cat", ear: 1, light: 0.08 }
+    ],
+    texts: {
+      teach: "このAIは、{白|しろ}いねこと{茶色|ちゃいろ}の{犬|いぬ}の{写真|しゃしん}だけで{学|まな}びます。「AIに{学習|がくしゅう}させる」を{押|お}してください。",
+      learned: "{学習|がくしゅう}が{終|お}わりました。「AIをテストする」を{押|お}してください。",
+      test: "3{枚|まい}の{写真|しゃしん}をタッチして、AIに{答|こた}えさせてください。",
+      after: "AIは{黒|くろ}いねこを{犬|いぬ}とまちがえました。{白|しろ}いねこしか{学|まな}んでいないので、{色|いろ}で{見分|みわ}けていたのです。"
+    }
+  },
+  quiz: [{
+    q: "AIがまちがえたのは、なぜでしょうか。",
+    options: [
+      { t: "AIがこわれていたから" },
+      { t: "{学|まな}んだ{例|れい}がかたよっていたから", correct: true }
+    ],
+    right: "{正解|せいかい}です。{例|れい}がかたよると、AIの{答|こた}えもかたよります。",
+    wrong: "AIは{白|しろ}いねこしか{見|み}ていませんでしたね。"
+  }],
+  summary: {
+    headline: "AIは{学|まな}んだ{例|れい}がかたよっていると、まちがえることがあります。",
+    words: [
+      { icon: "data", term: "かたより", desc: "{例|れい}の{種類|しゅるい}が{少|すく}なく、{一部|いちぶ}にだけ{集|あつ}まっていること" },
+      { icon: "search", term: "{確|たし}かめる", desc: "AIの{答|こた}えを、そのまま{信|しん}じないこと" }
+    ]
+  }
+});
+</script>
+</body>
+</html>

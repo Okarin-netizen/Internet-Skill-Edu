@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>D3 言葉の伝わり方</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap">
+<link rel="stylesheet" href="../../assets/ui.css">
+</head>
+<body>
+<main class="app" id="app" lang="ja"></main>
+<script src="../../assets/units.js"></script>
+<script src="../../assets/engine.js"></script>
+<script>
+var ui = Unit.ui;
+Unit.run({
+  code: "D3",
+  lead: "{文字|もじ}だけのメッセージは、{相手|あいて}にどう{伝|つた}わるでしょうか。",
+  activity: {
+    type: "reveal",
+    items: [
+      { front: ui.chat("Bさんの{返事|へんじ}", "いいよ！{楽|たの}しみ！", "person"), back: "うれしい。{来|き}てくれるんだと{安心|あんしん}できる。" },
+      { front: ui.chat("Bさんの{返事|へんじ}", "いいよ。", "person"), back: "{本当|ほんとう}は{行|い}きたくないのかな？と{心配|しんぱい}になるかもしれない。" },
+      { front: ui.chat("Bさんの{返事|へんじ}", "{別|べつ}にいいけど", "person"), back: "いやなのかな？おこっているのかな？と{思|おも}ってしまうかもしれない。" }
+    ],
+    texts: {
+      start: "Aさんが「{明日|あした}{遊|あそ}ぼう」とさそいました。Bさんの{返事|へんじ}を3つ{見|み}てみましょう。タッチすると、Aさんがどう{感|かん}じるかが{分|わ}かります。",
+      after: "{同|おな}じ「いいよ」でも、{書|か}き{方|かた}で{伝|つた}わり{方|かた}が{変|か}わります。{顔|かお}や{声|こえ}が{見|み}えない{分|ぶん}、{気持|きも}ちを{言葉|ことば}で{足|た}しましょう。"
+    }
+  },
+  quiz: [{
+    q: "{文字|もじ}で{気持|きも}ちを{伝|つた}えるために、できることはどれでしょうか。",
+    options: [
+      { t: "できるだけ{短|みじか}く{送|おく}る" },
+      { t: "{気持|きも}ちを{表|あらわ}す{言葉|ことば}をつけ{足|た}す", correct: true }
+    ],
+    right: "{正解|せいかい}です。{送|おく}る{前|まえ}に、{相手|あいて}の{気持|きも}ちで{読|よ}み{返|かえ}すのもよい{方法|ほうほう}です。",
+    wrong: "{短|みじか}い「いいよ。」は、{冷|つめ}たく{感|かん}じることがありましたね。"
+  }],
+  summary: {
+    headline: "{文字|もじ}だけでは{気持|きも}ちが{伝|つた}わりにくいので、{言葉|ことば}を{足|た}して{伝|つた}えます。",
+    words: [
+      { icon: "chat", term: "{文字|もじ}のやりとり", desc: "{表情|ひょうじょう}や{声|こえ}が{伝|つた}わらないコミュニケーション" },
+      { icon: "search", term: "{読|よ}み{返|かえ}す", desc: "{送|おく}る{前|まえ}に、{相手|あいて}の{気持|きも}ちになって{読|よ}んでみること" }
+    ]
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>B4 身の回りのAI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap">
+<link rel="stylesheet" href="../../assets/ui.css">
+</head>
+<body>
+<main class="app" id="app" lang="ja"></main>
+<script src="../../assets/units.js"></script>
+<script src="../../assets/engine.js"></script>
+<script>
+var ui = Unit.ui;
+Unit.run({
+  code: "B4",
+  lead: "AIは、{身|み}の{回|まわ}りのどこで{使|つか}われているのでしょうか。",
+  activity: {
+    type: "select",
+    items: [
+      { icon: "faceid", label: "{顔|かお}でロックを{開|あ}けるスマホ", correct: true, why: "{顔|かお}を{見分|みわ}けるのにAIを{使|つか}っています。" },
+      { icon: "translate", label: "{翻訳|ほんやく}アプリ", correct: true, why: "{文|ぶん}の{意味|いみ}をとらえて、{別|べつ}の{言葉|ことば}にしています。" },
+      { icon: "calc", label: "{電卓|でんたく}", correct: false, why: "{決|き}まった{計算|けいさん}をするだけで、{学|まな}んではいません。" },
+      { icon: "vacuum", label: "おそうじロボット", correct: true, why: "{部屋|へや}の{形|かたち}を{覚|おぼ}えて、{動|うご}き{方|かた}を{決|き}めています。" },
+      { icon: "clock", label: "{時計|とけい}", correct: false, why: "{時間|じかん}を{表示|ひょうじ}するだけです。" },
+      { icon: "play", label: "{動画|どうが}のおすすめ", correct: true, why: "{見|み}た{動画|どうが}から、{好|この}みを{予想|よそう}しています。" },
+      { icon: "speaker", label: "{話|はな}しかけると{答|こた}えるスピーカー", correct: true, why: "{声|こえ}を{聞|き}き{取|と}って、{言葉|ことば}を{理解|りかい}しています。" },
+      { icon: "pencil", label: "えんぴつ", correct: false, why: "{電気|でんき}を{使|つか}わない{道具|どうぐ}です。" }
+    ],
+    texts: {
+      start: "AIが{使|つか}われていると{思|おも}うものを{全部|ぜんぶ}{選|えら}んで、「{答|こた}え{合|あ}わせ」を{押|お}してください。",
+      after: "{緑|みどり}がそのとおり、{赤|あか}がちがっていたものです。AIは{特別|とくべつ}なものではなく、{身近|みぢか}な{道具|どうぐ}にたくさん{入|はい}っています。"
+    }
+  },
+  quiz: [{
+    q: "AIは、どこで{使|つか}われているでしょうか。",
+    options: [
+      { t: "{特別|とくべつ}な{研究所|けんきゅうじょ}だけ" },
+      { t: "スマホやアプリなど、{身|み}の{回|まわ}りの{道具|どうぐ}", correct: true }
+    ],
+    right: "{正解|せいかい}です。{気|き}づかないうちに、AIを{使|つか}っていることも{多|おお}いです。",
+    wrong: "スマホやスピーカーにもAIが{入|はい}っていましたね。"
+  }],
+  summary: {
+    headline: "AIは、スマホやアプリなど、{身|み}の{回|まわ}りの{道具|どうぐ}にたくさん{使|つか}われています。",
+    words: [
+      { icon: "faceid", term: "{顔認証|かおにんしょう}", desc: "{顔|かお}を{見分|みわ}けて、{本人|ほんにん}かどうかを{確|たし}かめる{仕組|しく}み" },
+      { icon: "play", term: "おすすめ", desc: "{見|み}たものから{好|この}みを{予想|よそう}して{選|えら}ぶ{仕組|しく}み" }
+    ]
+  }
+});
+</script>
+</body>
+</html>

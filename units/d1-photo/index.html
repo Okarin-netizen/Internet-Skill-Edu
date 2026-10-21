@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>D1 この写真、のせていい？</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap">
+<link rel="stylesheet" href="../../assets/ui.css">
+</head>
+<body>
+<main class="app" id="app" lang="ja"></main>
+<script src="../../assets/units.js"></script>
+<script src="../../assets/engine.js"></script>
+<script>
+var ui = Unit.ui;
+Unit.run({
+  code: "D1",
+  lead: "SNSに{写真|しゃしん}をのせる{前|まえ}に、{何|なに}を{考|かんが}えればよいでしょうか。",
+  activity: {
+    type: "judge",
+    prompt: "この{写真|しゃしん}をSNSにのせてもよいでしょうか。",
+    options: ["のせてよい", "やめておく"],
+    cards: [
+      { html: ui.scene("photo", "{空|そら}と{雲|くも}だけが{写|うつ}った{写真|しゃしん}"), answer: 0,
+        why: "{人|ひと}や{場所|ばしょ}が{分|わ}からない{写真|しゃしん}なので、のせても{問題|もんだい}は{少|すく}ないです。" },
+      { html: ui.scene("school", "{制服|せいふく}を{着|き}て、{校門|こうもん}の{前|まえ}で{撮|と}った{写真|しゃしん}"), answer: 1,
+        why: "{学校|がっこう}の{名前|なまえ}や{場所|ばしょ}が{分|わ}かってしまいます。", hint: "{校門|こうもん}や{制服|せいふく}から、{何|なに}が{分|わ}かるでしょうか。" },
+      { html: ui.scene("person", "{友|とも}だちと{一緒|いっしょ}に{写|うつ}った{写真|しゃしん}"), answer: 1,
+        why: "{友|とも}だちの{顔|かお}をのせるときは、{本人|ほんにん}の{許可|きょか}が{必要|ひつよう}です。", hint: "{友|とも}だちは、のせてもいいと{言|い}ったでしょうか。" },
+      { html: ui.scene("home", "{家|いえ}の{前|まえ}で{撮|と}った{写真|しゃしん}（{表札|ひょうさつ}が{見|み}える）"), answer: 1,
+        why: "{住|す}んでいる{場所|ばしょ}が{分|わ}かってしまいます。", hint: "{表札|ひょうさつ}から{何|なに}が{分|わ}かるでしょうか。" }
+    ],
+    after: "{写真|しゃしん}には、{場所|ばしょ}や{名前|なまえ}などの{情報|じょうほう}が{写|うつ}りこみます。のせる{前|まえ}に{確|たし}かめましょう。"
+  },
+  quiz: [{
+    q: "{写真|しゃしん}をのせる{前|まえ}に{確|たし}かめることはどれでしょうか。",
+    options: [
+      { t: "{場所|ばしょ}や{名前|なまえ}が{分|わ}からないか、{写|うつ}っている{人|ひと}がいいと{言|い}ったか", correct: true },
+      { t: "きれいに{撮|と}れているかだけ" }
+    ],
+    right: "{正解|せいかい}です。{迷|まよ}ったら、のせないのが{安全|あんぜん}です。",
+    wrong: "{校門|こうもん}や{表札|ひょうさつ}の{写真|しゃしん}を{思|おも}い{出|だ}してみましょう。"
+  }],
+  summary: {
+    headline: "{写真|しゃしん}をのせる{前|まえ}に、{場所|ばしょ}や{名前|なまえ}が{分|わ}からないか、{写|うつ}っている{人|ひと}の{許可|きょか}があるかを{確|たし}かめます。",
+    words: [
+      { icon: "pin", term: "{写|うつ}りこみ", desc: "{制服|せいふく}・{校門|こうもん}・{表札|ひょうさつ}など、{場所|ばしょ}や{名前|なまえ}が{分|わ}かるもの" },
+      { icon: "check", term: "{許可|きょか}", desc: "「のせていいよ」と{本人|ほんにん}に{言|い}ってもらうこと" }
+    ]
+  }
+});
+</script>
+</body>
+</html>

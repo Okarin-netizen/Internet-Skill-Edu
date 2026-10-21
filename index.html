@@ -2,28 +2,43 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>インターネットとAIのしくみ</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=M+PLUS+Rounded+1c:wght@800&display=swap">
-<style>
-:root { --bg: #EAF1F7; --surface: #FFFFFF; --ink: #1B2740; --muted: #55627A; --line: #B9C7D8; --accent: #E8590C; }
-@media (prefers-color-scheme: dark) { :root { --bg: #121A28; --surface: #1C2638; --ink: #EEF2F8; --muted: #A8B4C8; --line: #3A4A63; --accent: #FF8A4C; color-scheme: dark; } }
-body { margin: 0; background: var(--bg); color: var(--ink); font-family: "BIZ UDPGothic", sans-serif; font-size: 22px; line-height: 1.9; }
-main { max-width: 900px; margin: 0 auto; padding: 32px 16px; display: flex; flex-direction: column; gap: 20px; }
-h1 { font-family: "M PLUS Rounded 1c", sans-serif; margin: 0; }
-rt { font-size: 0.5em; }
-a.unit, div.unit { display: block; background: var(--surface); border: 4px solid var(--line); border-radius: 20px; padding: 20px 24px; color: inherit; text-decoration: none; font-weight: 700; }
-a.unit { border-color: var(--accent); }
-div.unit { color: var(--muted); font-weight: 400; }
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>インターネットとAIを学ぶ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap">
+<link rel="stylesheet" href="assets/ui.css">
 </head>
 <body>
-<main>
-  <h1>インターネットと AIの しくみ</h1>
-  <a class="unit" href="units/a1-message/">A1 メッセージが とどくまで</a>
-  <div class="unit">A2 ちいさく <ruby>分<rt>わ</rt></ruby>けて おくる（じゅんびちゅう）</div>
-  <div class="unit">A3 ウェブページは どこに ある？（じゅんびちゅう）</div>
-  <div class="unit">A4 <ruby>一度<rt>いちど</rt></ruby> <ruby>出<rt>だ</rt></ruby>したら もどらない（じゅんびちゅう）</div>
+<main class="app" id="app" lang="ja">
+  <header class="portal-head">
+    <h1 id="title"></h1>
+    <p class="lead" id="lead"></p>
+  </header>
 </main>
+<script src="assets/units.js"></script>
+<script src="assets/engine.js"></script>
+<script>
+(function () {
+  var R = Unit.R;
+  document.getElementById("title").innerHTML = R("インターネットとAIを{学|まな}ぶ");
+  document.getElementById("lead").innerHTML = R("{学|まな}びたい{単元|たんげん}を{選|えら}んでください。1つの{単元|たんげん}は{約|やく}10{分|ぷん}です。");
+  var app = document.getElementById("app");
+  CATALOG.forEach(function (t) {
+    var sec = document.createElement("section");
+    sec.className = "theme";
+    sec.innerHTML = '<h2><span class="code">' + t.code + "</span><span>" + R(t.name) + '</span></h2><div class="unit-list"></div>';
+    var list = sec.querySelector(".unit-list");
+    t.units.forEach(function (u) {
+      var a = document.createElement("a");
+      a.className = "unit-link";
+      a.href = "units/" + u.dir + "/index.html";
+      a.innerHTML = '<span class="code">' + u.code + "</span><b>" + R(u.title) + '</b><span class="desc">' + R(u.desc) + '</span><span class="time">' + R("{約|やく}10{分|ぷん}") + "</span>";
+      list.appendChild(a);
+    });
+    app.appendChild(sec);
+  });
+})();
+</script>
 </body>
 </html>

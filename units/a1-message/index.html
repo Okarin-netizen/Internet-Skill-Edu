@@ -3,428 +3,54 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>メッセージが届くまで</title>
-<meta name="claude:viewport-fit-sides" content="cover">
+<title>A1 メッセージが届くまで</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap">
-<style>
-/* Layout: one task per screen; a horizontal relay route (vertical on narrow screens) the message travels along. */
-:root {
-  --bg: #F3F5F7;
-  --surface: #FFFFFF;
-  --ink: #1D2530;
-  --muted: #5B6675;
-  --line: #CBD3DC;
-  --accent: #0B6E99;
-  --accent-ink: #FFFFFF;
-  --accent-soft: #E3F1F7;
-  --good: #2B7A4B;
-  --good-bg: #E5F2EA;
-  --bad: #A8432A;
-  --bad-bg: #F8E9E4;
-  --font: "BIZ UDPGothic", "Hiragino Sans", "Noto Sans JP", sans-serif;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #12171E; --surface: #1B222C; --ink: #E8EDF2; --muted: #9BA7B6; --line: #34404E;
-    --accent: #5CB8E0; --accent-ink: #0B1A22; --accent-soft: #16303D;
-    --good: #7CCB98; --good-bg: #1A3024; --bad: #EE9A82; --bad-bg: #3A2420;
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #12171E; --surface: #1B222C; --ink: #E8EDF2; --muted: #9BA7B6; --line: #34404E;
-  --accent: #5CB8E0; --accent-ink: #0B1A22; --accent-soft: #16303D;
-  --good: #7CCB98; --good-bg: #1A3024; --bad: #EE9A82; --bad-bg: #3A2420;
-  color-scheme: dark;
-}
-
-[hidden] { display: none !important; }
-html, body { height: 100%; }
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--ink);
-  font-family: var(--font);
-  font-size: 21px;
-  line-height: 2;
-}
-ruby rt { font-size: 0.5em; font-weight: 400; letter-spacing: 0; }
-
-.app {
-  max-width: 1080px;
-  margin: 0 auto;
-  padding-block: 16px 32px;
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-}
-
-.topbar { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
-.unit-tag { font-weight: 700; font-size: 0.85rem; color: var(--muted); letter-spacing: 0.06em; }
-.steps { display: flex; gap: 6px; margin-left: auto; list-style: none; padding: 0; margin-block: 0; font-size: 0.75rem; color: var(--muted); }
-.steps li { min-width: 64px; text-align: center; border-top: 4px solid var(--line); padding-top: 2px; }
-.steps li.on { border-color: var(--accent); color: var(--ink); font-weight: 700; }
-.steps li.done { border-color: var(--good); }
-
-button { font: inherit; color: inherit; cursor: pointer; }
-button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
-
-.btn {
-  font-weight: 700;
-  font-size: 1.15rem;
-  min-height: 68px;
-  padding: 0 44px;
-  border-radius: 8px;
-  border: 0;
-  background: var(--accent);
-  color: var(--accent-ink);
-}
-.btn:hover { filter: brightness(1.08); }
-
-
-.screen { display: flex; flex-direction: column; align-items: center; gap: 28px; }
-h1, h2 { font-weight: 700; margin: 0; text-wrap: balance; line-height: 1.7; }
-h1 { font-size: 2.1rem; }
-h2 { font-size: 1.5rem; text-align: center; }
-.lead { margin: 0; max-width: 34em; color: var(--muted); text-align: center; }
-.hero { display: flex; flex-direction: column; align-items: center; gap: 20px; padding-block: 48px; }
-
-/* Instruction bar */
-.prompt {
-  display: flex; align-items: center; gap: 16px;
-  background: var(--surface);
-  border-left: 6px solid var(--accent);
-  border-radius: 6px;
-  padding: 14px 20px;
-  max-width: 900px; width: 100%; box-sizing: border-box;
-  font-size: 1.2rem;
-  font-weight: 700;
-}
-.prompt p { margin: 0; flex: 1; min-width: 0; }
-
-/* Message picker */
-.messages { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
-.msg-choice {
-  min-width: 200px; min-height: 96px; border-radius: 10px;
-  border: 2px solid var(--line); background: var(--surface);
-  font-weight: 700; font-size: 1.25rem; padding: 12px 24px;
-}
-.msg-choice:hover { border-color: var(--accent); }
-
-/* Relay route */
-.route {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  width: 100%;
-  padding-top: 64px;
-}
-.route::before {
-  content: "";
-  position: absolute;
-  left: 12.5%; right: 12.5%;
-  top: calc(64px + 52px);
-  border-top: 3px dashed var(--line);
-}
-.node {
-  position: relative;
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
-  background: none; border: 0; padding: 0;
-  font-weight: 700; font-size: 1rem; line-height: 1.7;
-}
-.node[disabled] { cursor: default; }
-.node-icon {
-  width: 104px; height: 104px; border-radius: 12px;
-  background: var(--surface); border: 2px solid var(--line);
-  display: grid; place-items: center;
-  color: var(--muted);
-  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-}
-.node-icon svg { width: 60px; height: 60px; }
-.node small { font-weight: 400; font-size: 0.8rem; color: var(--muted); }
-.node.is-next .node-icon { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); animation: ring 1.4s ease-out infinite; }
-.node.is-done .node-icon { border-color: var(--good); color: var(--good); }
-.node.is-goal .node-icon { border-color: var(--good); background: var(--good-bg); color: var(--good); }
-@keyframes ring { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent); } 100% { box-shadow: 0 0 0 18px transparent; } }
-
-.packet {
-  position: absolute;
-  left: 0; top: 0;
-  height: 44px; padding: 0 14px;
-  border-radius: 6px;
-  background: var(--accent);
-  color: var(--accent-ink);
-  display: flex; align-items: center; gap: 8px;
-  font-size: 0.95rem; font-weight: 700; white-space: nowrap;
-  transform: translateX(-50%);
-  transition: left 0.6s ease-in-out, top 0.6s ease-in-out;
-  pointer-events: none;
-  z-index: 2;
-}
-.packet svg { width: 20px; height: 20px; }
-
-/* Quiz */
-.choices { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 760px; }
-.choice {
-  min-height: 80px; border-radius: 10px; border: 2px solid var(--line);
-  background: var(--surface); padding: 10px 20px;
-  font-weight: 700; font-size: 1.15rem; text-align: left;
-  display: flex; align-items: center; gap: 16px;
-}
-.choice .mark { font-size: 0.9rem; width: 36px; height: 36px; border-radius: 6px; border: 1px solid var(--line); display: grid; place-items: center; flex: none; color: var(--muted); }
-.choice.right { border-color: var(--good); background: var(--good-bg); }
-.choice.wrong { border-color: var(--bad); background: var(--bad-bg); }
-.feedback { margin: 0; font-weight: 700; font-size: 1.1rem; min-height: 2em; max-width: 760px; }
-.feedback.right { color: var(--good); }
-.feedback.wrong { color: var(--bad); }
-
-/* Summary */
-.words { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; width: 100%; max-width: 900px; }
-.word { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; display: flex; gap: 16px; align-items: center; }
-.word .node-icon { width: 72px; height: 72px; border-radius: 10px; flex: none; }
-.word .node-icon svg { width: 42px; height: 42px; }
-.word b { font-size: 1.1rem; display: block; }
-.word div { min-width: 0; }
-
-@media (max-width: 720px) {
-  body { font-size: 18px; }
-  h1 { font-size: 1.7rem; }
-  .steps li { min-width: 48px; }
-  .route { grid-template-columns: 1fr; padding-top: 0; gap: 28px; }
-  .route::before { left: calc(50% - 1px); right: auto; top: 40px; bottom: 80px; border-top: 0; border-left: 3px dashed var(--line); }
-  .node { flex-direction: row; justify-content: flex-start; gap: 16px; padding-left: calc(50% - 46px); text-align: left; }
-  .node-icon { width: 92px; height: 92px; }
-  .words { grid-template-columns: 1fr; }
-  .msg-choice { min-width: 0; width: 100%; }
-  .packet { transform: none; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .packet { transition: none; }
-  .node.is-next .node-icon { animation: none; }
-}
-</style>
+<link rel="stylesheet" href="../../assets/ui.css">
 </head>
 <body>
-<main class="app" lang="ja">
-  <div class="topbar">
-    <span class="unit-tag">A1 インターネットの仕組み</span>
-    <ol class="steps" id="steps" aria-label="進み具合">
-      <li><ruby>選<rt>えら</rt></ruby>ぶ</li><li><ruby>送<rt>おく</rt></ruby>る</li><li><ruby>考<rt>かんが</rt></ruby>える</li><li>まとめ</li>
-    </ol>
-  </div>
-
-  <!-- 0: start -->
-  <section class="screen" id="s-start">
-    <div class="hero">
-      <h1 data-t="メッセージが{届|とど}くまで"></h1>
-      <p class="lead" data-t="{友|とも}だちに{送|おく}ったメッセージは、どこを{通|とお}って{届|とど}くのでしょうか。{実際|じっさい}に{送|おく}って{確|たし}かめてみましょう。"></p>
-      <button class="btn" id="startBtn" data-t="スタート"></button>
-    </div>
-  </section>
-
-  <!-- 1: pick -->
-  <section class="screen" id="s-pick" hidden>
-    <div class="prompt"><p data-t="{送|おく}るメッセージを1つ{選|えら}んでください。"></p></div>
-    <div class="messages">
-      <button class="msg-choice" data-msg="りょうかい">りょうかい</button>
-      <button class="msg-choice" data-msg="ありがとう">ありがとう</button>
-      <button class="msg-choice" data-msg="また明日">また<ruby>明日<rt>あした</rt></ruby></button>
-    </div>
-  </section>
-
-  <!-- 2: relay -->
-  <section class="screen" id="s-route" hidden>
-    <div class="prompt"><p id="routePrompt" aria-live="polite"></p></div>
-    <div class="route" id="route">
-      <button class="node" disabled>
-        <span class="node-icon"><svg viewBox="0 0 72 72" aria-hidden="true"><rect x="14" y="8" width="44" height="56" rx="6" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="36" cy="55" r="3" fill="currentColor"/></svg></span>
-        <span><span data-t="{自分|じぶん}のタブレット"></span></span>
-      </button>
-      <button class="node" disabled>
-        <span class="node-icon"><svg viewBox="0 0 72 72" aria-hidden="true"><rect x="10" y="38" width="52" height="20" rx="4" fill="none" stroke="currentColor" stroke-width="4"/><path d="M22 38V22M50 38V22" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/><path d="M28 18a12 12 0 0 1 16 0M23 12a20 20 0 0 1 26 0" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" fill="none"/><circle cx="20" cy="48" r="2.5" fill="currentColor"/><circle cx="29" cy="48" r="2.5" fill="currentColor"/></svg></span>
-        <span><span data-t="{Wi-Fi|ワイファイ}ルーター"></span></span>
-      </button>
-      <button class="node" disabled>
-        <span class="node-icon"><svg viewBox="0 0 72 72" aria-hidden="true"><rect x="16" y="8" width="40" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="4"/><rect x="16" y="28" width="40" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="4"/><rect x="16" y="48" width="40" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="46" cy="16" r="2.5" fill="currentColor"/><circle cx="46" cy="36" r="2.5" fill="currentColor"/><circle cx="46" cy="56" r="2.5" fill="currentColor"/></svg></span>
-        <span><span data-t="サーバー"></span><br><small data-t="インターネットの{先|さき}"></small></span>
-      </button>
-      <button class="node" disabled>
-        <span class="node-icon"><svg viewBox="0 0 72 72" aria-hidden="true"><rect x="14" y="8" width="44" height="56" rx="6" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="36" cy="55" r="3" fill="currentColor"/><path d="M24 24h24M24 32h16" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" fill="none"/></svg></span>
-        <span><span data-t="{友|とも}だちのタブレット"></span></span>
-      </button>
-      <div class="packet" id="packet" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 7l9 6 9-6" fill="none" stroke="currentColor" stroke-width="2"/></svg><span id="packetText"></span></div>
-    </div>
-    <button class="btn" id="routeNext" hidden data-t="{次|つぎ}へ"></button>
-  </section>
-
-  <!-- 3: quiz -->
-  <section class="screen" id="s-quiz" hidden>
-    <div class="prompt"><p data-t="メッセージはどうやって{届|とど}いたでしょうか。"></p></div>
-    <div class="choices">
-      <button class="choice" data-correct="false"><span class="mark" aria-hidden="true">A</span><span data-t="タブレットから{友|とも}だちのタブレットへ、{直接|ちょくせつ}{届|とど}いた"></span></button>
-      <button class="choice" data-correct="true"><span class="mark" aria-hidden="true">B</span><span data-t="ルーターやサーバーを{中継|ちゅうけい}して{届|とど}いた"></span></button>
-    </div>
-    <p class="feedback" id="feedback" aria-live="polite"></p>
-    <button class="btn" id="quizNext" hidden data-t="{次|つぎ}へ"></button>
-  </section>
-
-  <!-- 4: summary -->
-  <section class="screen" id="s-end" hidden>
-    <h2 data-t="メッセージは、いくつもの{機械|きかい}をリレーして{届|とど}きます。"></h2>
-    <div class="words">
-      <div class="word">
-        <span class="node-icon"><svg viewBox="0 0 72 72" aria-hidden="true"><rect x="10" y="38" width="52" height="20" rx="4" fill="none" stroke="currentColor" stroke-width="4"/><path d="M22 38V22M50 38V22" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/><path d="M28 18a12 12 0 0 1 16 0M23 12a20 20 0 0 1 26 0" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" fill="none"/></svg></span>
-        <div><b data-t="ルーター"></b><span data-t="{学校|がっこう}や{家|いえ}のネットワークの{出入|でい}り{口|ぐち}"></span></div>
-      </div>
-      <div class="word">
-        <span class="node-icon"><svg viewBox="0 0 72 72" aria-hidden="true"><rect x="16" y="8" width="40" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="4"/><rect x="16" y="28" width="40" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="4"/><rect x="16" y="48" width="40" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="4"/></svg></span>
-        <div><b data-t="サーバー"></b><span data-t="メッセージを{預|あず}かって、{相手|あいて}に{渡|わた}すコンピューター"></span></div>
-      </div>
-    </div>
-    <button class="btn" id="againBtn" data-t="もう{一度|いちど}やる"></button>
-  </section>
-</main>
-
+<main class="app" id="app" lang="ja"></main>
+<script src="../../assets/units.js"></script>
+<script src="../../assets/engine.js"></script>
 <script>
-(function () {
-  // "{漢字|よみ}" → ruby for display, reading for speech
-  var RUBY = /\{([^|}]+)\|([^}]+)\}/g;
-  function toHtml(s) { return s.replace(RUBY, "<ruby>$1<rt>$2</rt></ruby>"); }
-  function toSpeech(s) { return s.replace(RUBY, "$2"); }
-  function setText(el, s) { el.dataset.t = s; el.innerHTML = toHtml(s); }
-  document.querySelectorAll("[data-t]").forEach(function (el) { el.innerHTML = toHtml(el.dataset.t); });
-
-  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  // Screens
-  var screens = ["s-start", "s-pick", "s-route", "s-quiz", "s-end"];
-  var steps = document.querySelectorAll("#steps li");
-  function show(id) {
-    var idx = screens.indexOf(id);
-    screens.forEach(function (s) { document.getElementById(s).hidden = s !== id; });
-    steps.forEach(function (d, i) {
-      d.className = i < idx - 1 ? "done" : i === idx - 1 ? "on" : "";
-    });
-    window.scrollTo(0, 0);
+var ui = Unit.ui;
+Unit.run({
+  code: "A1",
+  lead: "{友|とも}だちに{送|おく}ったメッセージは、どこを{通|とお}って{届|とど}くのでしょうか。{実際|じっさい}に{送|おく}って{確|たし}かめてみましょう。",
+  activity: {
+    type: "relay",
+    pick: { prompt: "{送|おく}るメッセージを1つ{選|えら}んでください。", options: ["りょうかい", "ありがとう", "また{明日|あした}"] },
+    nodes: [
+      { icon: "tablet", label: "{自分|じぶん}のタブレット" },
+      { icon: "router", label: "{Wi-Fi|ワイファイ}ルーター" },
+      { icon: "server", label: "サーバー", sub: "インターネットの{先|さき}" },
+      { icon: "tabletMsg", label: "{友|とも}だちのタブレット" }
+    ],
+    texts: [
+      "メッセージを{送|おく}ります。{光|ひか}っているところをタッチしてください。",
+      "{Wi-Fi|ワイファイ}ルーターに{着|つ}きました。ルーターは、{学校|がっこう}のネットワークの{出入|でい}り{口|ぐち}です。{次|つぎ}もタッチしてください。",
+      "サーバーに{着|つ}きました。サーバーは、メッセージを{預|あず}かって{相手|あいて}に{渡|わた}すコンピューターです。{最後|さいご}に{友|とも}だちのタブレットをタッチしてください。",
+      "{友|とも}だちに{届|とど}きました。メッセージはリレーして{届|とど}いたことが{分|わ}かります。"
+    ]
+  },
+  quiz: [{
+    q: "メッセージはどうやって{届|とど}いたでしょうか。",
+    options: [
+      { t: "タブレットから{友|とも}だちのタブレットへ、{直接|ちょくせつ}{届|とど}いた" },
+      { t: "ルーターやサーバーを{中継|ちゅうけい}して{届|とど}いた", correct: true }
+    ],
+    right: "{正解|せいかい}です。メッセージは、ルーターやサーバーを{中継|ちゅうけい}して{届|とど}きます。",
+    wrong: "{途中|とちゅう}でルーターとサーバーを{通|とお}りました。もう{一方|いっぽう}を{選|えら}んでみましょう。"
+  }],
+  summary: {
+    headline: "メッセージは、いくつもの{機械|きかい}をリレーして{届|とど}きます。",
+    words: [
+      { icon: "router", term: "ルーター", desc: "{学校|がっこう}や{家|いえ}のネットワークの{出入|でい}り{口|ぐち}" },
+      { icon: "server", term: "サーバー", desc: "メッセージを{預|あず}かって、{相手|あいて}に{渡|わた}すコンピューター" }
+    ]
   }
-
-  // Relay
-  var route = document.getElementById("route");
-  var nodes = Array.prototype.slice.call(route.querySelectorAll(".node"));
-  var packet = document.getElementById("packet");
-  var promptEl = document.getElementById("routePrompt");
-  var routeNext = document.getElementById("routeNext");
-  var hopText = [
-    "メッセージを{送|おく}ります。{光|ひか}っているところをタッチしてください。",
-    "{Wi-Fi|ワイファイ}ルーターに{着|つ}きました。ルーターは、{学校|がっこう}のネットワークの{出入|でい}り{口|ぐち}です。{次|つぎ}もタッチしてください。",
-    "サーバーに{着|つ}きました。サーバーは、メッセージを{預|あず}かって{相手|あいて}に{渡|わた}すコンピューターです。{最後|さいご}に{友|とも}だちのタブレットをタッチしてください。",
-    "{友|とも}だちに{届|とど}きました。メッセージはリレーして{届|とど}いたことが分かります。"
-  ];
-  var pos = 0, busy = false;
-
-  function placePacket(i, animate) {
-    var icon = nodes[i].querySelector(".node-icon");
-    var r = route.getBoundingClientRect();
-    var ir = icon.getBoundingClientRect();
-    var narrow = window.matchMedia("(max-width: 720px)").matches;
-    var x, y;
-    if (narrow) {
-      x = ir.left - r.left - packet.offsetWidth - 12;
-      if (x < 0) x = ir.right - r.left + 12;
-      y = ir.top - r.top + ir.height / 2 - 22;
-    } else {
-      x = ir.left - r.left + ir.width / 2;
-      y = ir.top - r.top - 60;
-    }
-    if (!animate) { packet.style.transition = "none"; }
-    packet.style.left = x + "px";
-    packet.style.top = y + "px";
-    if (!animate) { void packet.offsetWidth; packet.style.transition = ""; }
-  }
-  function markNext() {
-    nodes.forEach(function (n, i) {
-      n.classList.toggle("is-next", i === pos + 1);
-      n.classList.toggle("is-done", i <= pos && i < 3);
-      n.disabled = i !== pos + 1;
-    });
-    if (nodes[pos + 1]) nodes[pos + 1].focus({ preventScroll: true });
-  }
-  function startRoute() {
-    pos = 0; busy = false;
-    routeNext.hidden = true;
-    nodes.forEach(function (n) { n.classList.remove("is-goal"); });
-    setText(promptEl, hopText[0]);
-    show("s-route");
-    requestAnimationFrame(function () { placePacket(0, false); markNext(); });
-  }
-  nodes.forEach(function (n, i) {
-    n.addEventListener("click", function () {
-      if (busy || i !== pos + 1) return;
-      busy = true;
-      pos = i;
-      nodes.forEach(function (m) { m.disabled = true; m.classList.remove("is-next"); });
-      placePacket(pos, !reduceMotion);
-      setTimeout(function () {
-        busy = false;
-        setText(promptEl, hopText[pos]);
-        if (pos === 3) {
-          nodes.forEach(function (m, k) { m.classList.toggle("is-done", k < 3); });
-          nodes[3].classList.add("is-goal");
-          routeNext.hidden = false;
-          routeNext.focus({ preventScroll: true });
-        } else {
-          markNext();
-        }
-      }, reduceMotion ? 50 : 650);
-    });
-  });
-  window.addEventListener("resize", function () {
-    if (!document.getElementById("s-route").hidden) placePacket(pos, false);
-  });
-
-  // Quiz
-  var feedback = document.getElementById("feedback");
-  var quizNext = document.getElementById("quizNext");
-  var choices = document.querySelectorAll(".choice");
-  function resetQuiz() {
-    choices.forEach(function (c) { c.classList.remove("right", "wrong"); c.disabled = false; });
-    feedback.textContent = ""; feedback.className = "feedback";
-    quizNext.hidden = true;
-  }
-  choices.forEach(function (c) {
-    c.addEventListener("click", function () {
-      var ok = c.dataset.correct === "true";
-      var msg;
-      if (ok) {
-        c.classList.add("right");
-        choices.forEach(function (o) { o.disabled = true; });
-        msg = "{正解|せいかい}です。メッセージは、ルーターやサーバーを{中継|ちゅうけい}して{届|とど}きます。";
-        feedback.className = "feedback right";
-        quizNext.hidden = false;
-      } else {
-        c.classList.add("wrong");
-        c.disabled = true;
-        msg = "{途中|とちゅう}でルーターとサーバーを{通|とお}りました。もう{一方|いっぽう}を{選|えら}んでみましょう。";
-        feedback.className = "feedback wrong";
-      }
-      setText(feedback, msg);
-    });
-  });
-
-  // Flow
-  document.getElementById("startBtn").addEventListener("click", function () { show("s-pick"); });
-  document.querySelectorAll(".msg-choice").forEach(function (b) {
-    b.addEventListener("click", function () { document.getElementById("packetText").textContent = b.dataset.msg; startRoute(); });
-  });
-  routeNext.addEventListener("click", function () { resetQuiz(); show("s-quiz"); });
-  quizNext.addEventListener("click", function () { show("s-end"); });
-  document.getElementById("againBtn").addEventListener("click", function () { show("s-pick"); });
-})();
+});
 </script>
 </body>
 </html>

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>A2 小さく分けて送る</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap">
+<link rel="stylesheet" href="../../assets/ui.css">
+</head>
+<body>
+<main class="app" id="app" lang="ja"></main>
+<script src="../../assets/units.js"></script>
+<script src="../../assets/engine.js"></script>
+<script>
+var ui = Unit.ui;
+Unit.run({
+  code: "A2",
+  lead: "{写真|しゃしん}のような{大|おお}きなデータは、どうやって{送|おく}られるのでしょうか。",
+  activity: {
+    type: "order",
+    texts: [
+      "この{写真|しゃしん}を{友|とも}だちに{送|おく}ります。「{送信|そうしん}する」を{押|お}してください。",
+      "{写真|しゃしん}は6つの{小|ちい}さなかたまり（パケット）に{分|わ}けて{送|おく}られ、ばらばらの{順番|じゅんばん}で{届|とど}きました。1{番|ばん}から{順|じゅん}にタッチして、{組|く}み{立|た}ててください。",
+      "{写真|しゃしん}が{元|もと}にもどりました。{番号|ばんごう}があるので、ばらばらに{届|とど}いても{正|ただ}しく{組|く}み{立|た}てられます。"
+    ],
+    hint: "{番号|ばんごう}の{小|ちい}さい{順|じゅん}にタッチしてください。"
+  },
+  quiz: [{
+    q: "{大|おお}きな{写真|しゃしん}は、どうやって{送|おく}られていたでしょうか。",
+    options: [
+      { t: "1つの{大|おお}きなかたまりのまま{送|おく}られる" },
+      { t: "{小|ちい}さく{分|わ}けて{送|おく}られ、{届|とど}いた{先|さき}で{組|く}み{立|た}てられる", correct: true }
+    ],
+    right: "{正解|せいかい}です。{小|ちい}さく{分|わ}けると、{混|こ}み{合|あ}っていても{少|すこ}しずつ{送|おく}れます。",
+    wrong: "{写真|しゃしん}は6つに{分|わ}かれて{届|とど}きましたね。"
+  }],
+  summary: {
+    headline: "{大|おお}きなデータは{小|ちい}さく{分|わ}けて{送|おく}り、{届|とど}いた{先|さき}で{元|もと}にもどします。",
+    words: [
+      { icon: "data", term: "パケット", desc: "{小|ちい}さく{分|わ}けたデータのかたまり" },
+      { icon: "check", term: "{番号|ばんごう}", desc: "{元|もと}の{順番|じゅんばん}にもどすための{目印|めじるし}" }
+    ]
+  }
+});
+</script>
+</body>
+</html>
