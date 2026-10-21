@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>メッセージがとどくまで</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=M+PLUS+Rounded+1c:wght@700;800&display=swap">
+<style>
+/* Layout: one task per screen; a horizontal relay route (vertical on narrow screens) the stamp travels along. */
+:root {
+  --bg: #EAF1F7;
+  --surface: #FFFFFF;
+  --ink: #1B2740;
+  --muted: #55627A;
+  --line: #B9C7D8;
+  --accent: #E8590C;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #FDE8DC;
+  --good: #2B7A3D;
+  --good-bg: #E1F3E5;
+  --bad: #A8432A;
+  --bad-bg: #FBE7E1;
+  --display: "M PLUS Rounded 1c", "BIZ UDPGothic", "Hiragino Maru Gothic ProN", sans-serif;
+  --body: "BIZ UDPGothic", "Hiragino Sans", "Noto Sans JP", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121A28; --surface: #1C2638; --ink: #EEF2F8; --muted: #A8B4C8; --line: #3A4A63;
+    --accent: #FF8A4C; --accent-ink: #1B1208; --accent-soft: #3A2618;
+    --good: #7AD58D; --good-bg: #1B3324; --bad: #F2937A; --bad-bg: #3A2420;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121A28; --surface: #1C2638; --ink: #EEF2F8; --muted: #A8B4C8; --line: #3A4A63;
+  --accent: #FF8A4C; --accent-ink: #1B1208; --accent-soft: #3A2618;
+  --good: #7AD58D; --good-bg: #1B3324; --bad: #F2937A; --bad-bg: #3A2420;
+  color-scheme: dark;
+}
+
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 22px;
+  line-height: 1.9;
+}
+ruby rt { font-size: 0.5em; font-weight: 400; letter-spacing: 0; }
+
+.app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-block: 16px 32px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.topbar { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.unit-tag { font-family: var(--display); font-weight: 800; font-size: 0.8rem; color: var(--muted); letter-spacing: 0.08em; }
+.steps { display: flex; gap: 10px; margin-left: auto; align-items: center; }
+.steps span { width: 18px; height: 18px; border-radius: 50%; background: var(--line); }
+.steps span.on { background: var(--accent); }
+.steps span.done { background: var(--good); }
+
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible { outline: 4px solid var(--accent); outline-offset: 4px; }
+
+.btn {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 1.3rem;
+  min-height: 80px;
+  padding: 0 40px;
+  border-radius: 20px;
+  border: 0;
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: 0 6px 0 color-mix(in srgb, var(--accent) 60%, #000);
+  transition: transform 0.1s;
+}
+.btn:active { transform: translateY(4px); box-shadow: 0 2px 0 color-mix(in srgb, var(--accent) 60%, #000); }
+.btn.quiet { background: var(--surface); color: var(--ink); border: 3px solid var(--line); box-shadow: none; font-size: 1.1rem; min-height: 64px; padding: 0 24px; }
+
+.speak-toggle { display: inline-flex; align-items: center; gap: 8px; }
+.speak-toggle[aria-pressed="false"] { opacity: 0.6; }
+.icon { width: 28px; height: 28px; flex: none; }
+
+.screen { display: flex; flex-direction: column; align-items: center; gap: 28px; text-align: center; }
+h1, h2 { font-family: var(--display); font-weight: 800; margin: 0; text-wrap: balance; line-height: 1.6; }
+h1 { font-size: 2.4rem; }
+h2 { font-size: 1.7rem; }
+.lead { margin: 0; max-width: 32em; color: var(--muted); }
+
+/* Prompt bubble */
+.prompt {
+  display: flex; align-items: center; gap: 16px;
+  background: var(--surface);
+  border: 3px solid var(--line);
+  border-radius: 24px;
+  padding: 16px 24px;
+  max-width: 900px; width: 100%; box-sizing: border-box;
+  text-align: left;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+.prompt p { margin: 0; flex: 1; min-width: 0; }
+.replay { flex: none; width: 64px; height: 64px; border-radius: 50%; border: 3px solid var(--line); background: var(--bg); display: grid; place-items: center; }
+
+/* Stamp picker */
+.stamps { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; }
+.stamp-choice {
+  width: 160px; height: 160px; border-radius: 32px;
+  border: 4px solid var(--line); background: var(--surface);
+  font-size: 5rem; line-height: 1;
+  display: grid; place-items: center;
+}
+.stamp-choice:hover { border-color: var(--accent); }
+
+/* Relay route */
+.route {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  width: 100%;
+  padding-top: 72px;
+}
+.route::before {
+  content: "";
+  position: absolute;
+  left: 12.5%; right: 12.5%;
+  top: calc(72px + 60px);
+  border-top: 8px dotted var(--line);
+}
+.node {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  background: none; border: 0; padding: 0;
+  font-family: var(--display); font-weight: 700; font-size: 1.05rem; line-height: 1.6;
+}
+.node[disabled] { cursor: default; }
+.node-icon {
+  width: 120px; height: 120px; border-radius: 28px;
+  background: var(--surface); border: 4px solid var(--line);
+  display: grid; place-items: center;
+  color: var(--muted);
+  transition: border-color 0.2s, background 0.2s;
+}
+.node-icon svg { width: 72px; height: 72px; }
+.node small { font-family: var(--body); font-weight: 400; font-size: 0.85rem; color: var(--muted); }
+.node.is-next .node-icon { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); animation: pulse 1.2s ease-in-out infinite; }
+.node.is-done .node-icon { border-color: var(--good); color: var(--good); }
+.node.is-goal .node-icon { border-color: var(--good); background: var(--good-bg); color: var(--good); }
+@keyframes pulse { 50% { transform: scale(1.08); } }
+
+.stamp {
+  position: absolute;
+  left: 0; top: 0;
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--surface);
+  border: 4px solid var(--accent);
+  display: grid; place-items: center;
+  font-size: 2.6rem; line-height: 1;
+  transition: left 0.6s ease-in-out, top 0.6s ease-in-out;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Quiz */
+.choices { display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 760px; }
+.choice {
+  min-height: 88px; border-radius: 20px; border: 4px solid var(--line);
+  background: var(--surface); padding: 12px 24px;
+  font-family: var(--display); font-weight: 700; font-size: 1.25rem; text-align: left;
+  display: flex; align-items: center; gap: 16px;
+}
+.choice .mark { font-size: 1.6rem; width: 48px; height: 48px; border-radius: 50%; background: var(--bg); display: grid; place-items: center; flex: none; }
+.choice.right { border-color: var(--good); background: var(--good-bg); }
+.choice.wrong { border-color: var(--bad); background: var(--bad-bg); }
+.feedback { margin: 0; font-weight: 700; font-size: 1.2rem; min-height: 2em; }
+.feedback.right { color: var(--good); }
+.feedback.wrong { color: var(--bad); }
+
+/* Summary */
+.words { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; width: 100%; max-width: 900px; }
+.word { background: var(--surface); border: 3px solid var(--line); border-radius: 20px; padding: 16px 20px; text-align: left; display: flex; gap: 16px; align-items: center; }
+.word .node-icon { width: 80px; height: 80px; border-radius: 20px; flex: none; }
+.word .node-icon svg { width: 48px; height: 48px; }
+.word b { font-family: var(--display); font-size: 1.2rem; display: block; }
+.word div { min-width: 0; }
+
+@media (max-width: 720px) {
+  body { font-size: 19px; }
+  h1 { font-size: 1.9rem; }
+  .route { grid-template-columns: 1fr; padding-top: 0; gap: 28px; }
+  .route::before { left: calc(50% - 4px); right: auto; top: 40px; bottom: 80px; border-top: 0; border-left: 8px dotted var(--line); }
+  .node { flex-direction: row; justify-content: flex-start; gap: 20px; padding-left: calc(50% - 60px); text-align: left; }
+  .node-icon { width: 100px; height: 100px; }
+  .words { grid-template-columns: 1fr; }
+  .stamp-choice { width: 120px; height: 120px; font-size: 4rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stamp { transition: none; }
+  .node.is-next .node-icon { animation: none; }
+}
+</style>
+</head>
+<body>
+<main class="app" lang="ja">
+  <div class="topbar">
+    <span class="unit-tag">A1 インターネットの しくみ</span>
+    <button class="btn quiet speak-toggle" id="speakToggle" aria-pressed="true">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <span id="speakLabel">よみあげ オン</span>
+    </button>
+    <div class="steps" id="steps" aria-label="すすみぐあい">
+      <span></span><span></span><span></span><span></span>
+    </div>
+  </div>
+
+  <!-- 0: start -->
+  <section class="screen" id="s-start">
+    <h1 data-t="メッセージが とどくまで"></h1>
+    <p class="lead" data-t="ともだちに スタンプを {送|おく}って、どうやって とどくのか {見|み}てみよう。"></p>
+    <button class="btn" id="startBtn" data-t="はじめる"></button>
+  </section>
+
+  <!-- 1: pick -->
+  <section class="screen" id="s-pick" hidden>
+    <div class="prompt"><p data-say data-t="{送|おく}る スタンプを ひとつ えらんでね。"></p><button class="replay" aria-label="もういちど きく"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
+    <div class="stamps">
+      <button class="stamp-choice" data-stamp="😊" aria-label="にこにこ">😊</button>
+      <button class="stamp-choice" data-stamp="👍" aria-label="いいね">👍</button>
+      <button class="stamp-choice" data-stamp="🎉" aria-label="おめでとう">🎉</button>
+    </div>
+  </section>
+
+  <!-- 2: relay -->
+  <section class="screen" id="s-route" hidden>
+    <div class="prompt"><p id="routePrompt" data-say aria-live="polite"></p><button class="replay" aria-label="もういちど きく"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
+    <div class="route" id="route">
+      <button class="node" disabled>
+        <span class="node-icon"><svg viewBox="0 0 72 72" aria-hidden="true"><rect x="14" y="8" width="44" height="56" rx="6" fill="none" stroke="currentColor" stroke-width="5"/><circle cx="36" cy="55" r="3.5" fill="currentColor"/></svg></span>
+        <span><span data-t="じぶんの タブレット"></span></span>
+      </button>
+      <button class="node" disabled>
+        <span class="node-icon"><svg viewBox="0 0 72 72" aria-hidden="true"><rect x="10" y="38" width="52" height="20" rx="5" fill="none" stroke="currentColor" stroke-width="5"/><path d="M22 38V22M50 38V22" stroke="currentColor" stroke-width="5" stroke-linecap="round" fill="none"/><path d="M28 18a12 12 0 0 1 16 0M23 12a20 20 0 0 1 26 0" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/><circle cx="20" cy="48" r="3" fill="currentColor"/><circle cx="30" cy="48" r="3" fill="currentColor"/></svg></span>
+        <span><span data-t="{Wi-Fi|ワイファイ} ルーター"></span></span>
+      </button>
+      <button class="node" disabled>
+        <span class="node-icon"><svg viewBox="0 0 72 72" aria-hidden="true"><rect x="16" y="8" width="40" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="5"/><rect x="16" y="28" width="40" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="5"/><rect x="16" y="48" width="40" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="5"/><circle cx="46" cy="16" r="3" fill="currentColor"/><circle cx="46" cy="36" r="3" fill="currentColor"/><circle cx="46" cy="56" r="3" fill="currentColor"/></svg></span>
+        <span><span data-t="サーバー"></span><br><small data-t="インターネットの むこう"></small></span>
+      </button>
+      <button class="node" disabled>
+        <span class="node-icon"><svg viewBox="0 0 72 72" aria-hidden="true"><rect x="14" y="8" width="44" height="56" rx="6" fill="none" stroke="currentColor" stroke-width="5"/><circle cx="29" cy="28" r="3.5" fill="currentColor"/><circle cx="43" cy="28" r="3.5" fill="currentColor"/><path d="M27 38a10 10 0 0 0 18 0" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg></span>
+        <span><span data-t="ともだちの タブレット"></span></span>
+      </button>
+      <div class="stamp" id="stamp" aria-hidden="true">😊</div>
+    </div>
+    <button class="btn" id="routeNext" hidden data-t="つぎへ"></button>
+  </section>
+
+  <!-- 3: quiz -->
+  <section class="screen" id="s-quiz" hidden>
+    <div class="prompt"><p data-say data-t="スタンプは どうやって とどいたかな？"></p><button class="replay" aria-label="もういちど きく"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
+    <div class="choices">
+      <button class="choice" data-correct="false"><span class="mark" aria-hidden="true">ア</span><span data-t="タブレットから ともだちへ、まっすぐ とんで いった"></span></button>
+      <button class="choice" data-correct="true"><span class="mark" aria-hidden="true">イ</span><span data-t="ルーターや サーバーを リレーして とどいた"></span></button>
+    </div>
+    <p class="feedback" id="feedback" aria-live="polite"></p>
+    <button class="btn" id="quizNext" hidden data-t="つぎへ"></button>
+  </section>
+
+  <!-- 4: summary -->
+  <section class="screen" id="s-end" hidden>
+    <h2 data-say data-t="メッセージは、いくつもの きかいを リレーして とどくんだね。"></h2>
+    <div class="words">
+      <div class="word">
+        <span class="node-icon"><svg viewBox="0 0 72 72" aria-hidden="true"><rect x="10" y="38" width="52" height="20" rx="5" fill="none" stroke="currentColor" stroke-width="5"/><path d="M22 38V22M50 38V22" stroke="currentColor" stroke-width="5" stroke-linecap="round" fill="none"/><path d="M28 18a12 12 0 0 1 16 0M23 12a20 20 0 0 1 26 0" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/></svg></span>
+        <div><b data-t="ルーター"></b><span data-t="{学校|がっこう}や {家|いえ}の ネットの {入|い}り{口|ぐち}"></span></div>
+      </div>
+      <div class="word">
+        <span class="node-icon"><svg viewBox="0 0 72 72" aria-hidden="true"><rect x="16" y="8" width="40" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="5"/><rect x="16" y="28" width="40" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="5"/><rect x="16" y="48" width="40" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="5"/></svg></span>
+        <div><b data-t="サーバー"></b><span data-t="メッセージを あずかって、{相手|あいて}に わたす コンピューター"></span></div>
+      </div>
+    </div>
+    <button class="btn" id="againBtn" data-t="もういちど やる"></button>
+  </section>
+</main>
+
+<script>
+(function () {
+  // "{漢字|よみ}" → ruby for display, reading for speech
+  var RUBY = /\{([^|}]+)\|([^}]+)\}/g;
+  function toHtml(s) { return s.replace(RUBY, "<ruby>$1<rt>$2</rt></ruby>"); }
+  function toSpeech(s) { return s.replace(RUBY, "$2"); }
+  function setText(el, s) { el.dataset.t = s; el.innerHTML = toHtml(s); }
+  document.querySelectorAll("[data-t]").forEach(function (el) { el.innerHTML = toHtml(el.dataset.t); });
+
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Speech
+  var speakOn = true;
+  var jaVoice = null;
+  function pickVoice() {
+    if (!("speechSynthesis" in window)) return;
+    var vs = speechSynthesis.getVoices();
+    jaVoice = vs.find(function (v) { return /^ja/i.test(v.lang); }) || null;
+  }
+  if ("speechSynthesis" in window) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+  function speak(s) {
+    if (!speakOn || !("speechSynthesis" in window)) return;
+    speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(toSpeech(s));
+    u.lang = "ja-JP";
+    u.rate = 0.9;
+    if (jaVoice) u.voice = jaVoice;
+    speechSynthesis.speak(u);
+  }
+  var toggle = document.getElementById("speakToggle");
+  toggle.addEventListener("click", function () {
+    speakOn = !speakOn;
+    toggle.setAttribute("aria-pressed", String(speakOn));
+    document.getElementById("speakLabel").textContent = speakOn ? "よみあげ オン" : "よみあげ オフ";
+    if (!speakOn && "speechSynthesis" in window) speechSynthesis.cancel();
+  });
+  document.querySelectorAll(".replay").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var p = b.parentElement.querySelector("[data-say]");
+      if (p) { var was = speakOn; speakOn = true; speak(p.dataset.t); speakOn = was; }
+    });
+  });
+
+  // Screens
+  var screens = ["s-start", "s-pick", "s-route", "s-quiz", "s-end"];
+  var dots = document.querySelectorAll("#steps span");
+  function show(id) {
+    var idx = screens.indexOf(id);
+    screens.forEach(function (s) { document.getElementById(s).hidden = s !== id; });
+    dots.forEach(function (d, i) {
+      d.className = i < idx - 1 ? "done" : i === idx - 1 ? "on" : "";
+    });
+    document.getElementById("steps").setAttribute("aria-label", "ステップ " + Math.max(idx, 0) + " / 4");
+    var say = document.getElementById(id).querySelector("[data-say]");
+    if (say && say.dataset.t) speak(say.dataset.t);
+    window.scrollTo(0, 0);
+  }
+
+  // Relay
+  var route = document.getElementById("route");
+  var nodes = Array.prototype.slice.call(route.querySelectorAll(".node"));
+  var stamp = document.getElementById("stamp");
+  var promptEl = document.getElementById("routePrompt");
+  var routeNext = document.getElementById("routeNext");
+  var hopText = [
+    "スタンプを {送|おく}るよ。ひかっている ところを タッチしてね。",
+    "{Wi-Fi|ワイファイ} ルーターに ついた！ ルーターは、{学校|がっこう}の ネットの {入|い}り{口|ぐち}だよ。つぎも タッチしてね。",
+    "サーバーに ついた！ サーバーは、メッセージを あずかって {相手|あいて}に わたす コンピューターだよ。さいごに ともだちを タッチしてね。",
+    "ともだちに とどいた！ スタンプは リレーして とどいたね。"
+  ];
+  var pos = 0, busy = false;
+
+  function placeStamp(i, animate) {
+    var icon = nodes[i].querySelector(".node-icon");
+    var r = route.getBoundingClientRect();
+    var ir = icon.getBoundingClientRect();
+    var narrow = window.matchMedia("(max-width: 720px)").matches;
+    var x = narrow ? ir.left - r.left - 84 : ir.left - r.left + ir.width / 2 - 36;
+    var y = narrow ? ir.top - r.top + ir.height / 2 - 36 : ir.top - r.top - 84;
+    if (narrow && x < 0) x = ir.right - r.left + 12;
+    if (!animate) { stamp.style.transition = "none"; }
+    stamp.style.left = x + "px";
+    stamp.style.top = y + "px";
+    if (!animate) { void stamp.offsetWidth; stamp.style.transition = ""; }
+  }
+  function markNext() {
+    nodes.forEach(function (n, i) {
+      n.classList.toggle("is-next", i === pos + 1);
+      n.classList.toggle("is-done", i <= pos && i < 3);
+      n.disabled = i !== pos + 1;
+    });
+    if (nodes[pos + 1]) nodes[pos + 1].focus({ preventScroll: true });
+  }
+  function startRoute() {
+    pos = 0; busy = false;
+    routeNext.hidden = true;
+    nodes.forEach(function (n) { n.classList.remove("is-goal"); });
+    setText(promptEl, hopText[0]);
+    show("s-route");
+    requestAnimationFrame(function () { placeStamp(0, false); markNext(); });
+  }
+  nodes.forEach(function (n, i) {
+    n.addEventListener("click", function () {
+      if (busy || i !== pos + 1) return;
+      busy = true;
+      pos = i;
+      nodes.forEach(function (m) { m.disabled = true; m.classList.remove("is-next"); });
+      placeStamp(pos, !reduceMotion);
+      setTimeout(function () {
+        busy = false;
+        setText(promptEl, hopText[pos]);
+        speak(hopText[pos]);
+        if (pos === 3) {
+          nodes.forEach(function (m, k) { m.classList.toggle("is-done", k < 3); });
+          nodes[3].classList.add("is-goal");
+          routeNext.hidden = false;
+          routeNext.focus({ preventScroll: true });
+        } else {
+          markNext();
+        }
+      }, reduceMotion ? 50 : 650);
+    });
+  });
+  window.addEventListener("resize", function () {
+    if (!document.getElementById("s-route").hidden) placeStamp(pos, false);
+  });
+
+  // Quiz
+  var feedback = document.getElementById("feedback");
+  var quizNext = document.getElementById("quizNext");
+  var choices = document.querySelectorAll(".choice");
+  function resetQuiz() {
+    choices.forEach(function (c) { c.classList.remove("right", "wrong"); c.disabled = false; });
+    feedback.textContent = ""; feedback.className = "feedback";
+    quizNext.hidden = true;
+  }
+  choices.forEach(function (c) {
+    c.addEventListener("click", function () {
+      var ok = c.dataset.correct === "true";
+      var msg;
+      if (ok) {
+        c.classList.add("right");
+        choices.forEach(function (o) { o.disabled = true; });
+        msg = "せいかい！ メッセージは いくつもの きかいを リレーして とどくよ。";
+        feedback.className = "feedback right";
+        quizNext.hidden = false;
+      } else {
+        c.classList.add("wrong");
+        c.disabled = true;
+        msg = "おしい！ とちゅうで ルーターと サーバーを とおったね。もう ひとつの ほうを えらんでみよう。";
+        feedback.className = "feedback wrong";
+      }
+      setText(feedback, msg);
+      speak(msg);
+    });
+  });
+
+  // Flow
+  document.getElementById("startBtn").addEventListener("click", function () { show("s-pick"); });
+  document.querySelectorAll(".stamp-choice").forEach(function (b) {
+    b.addEventListener("click", function () { stamp.textContent = b.dataset.stamp; startRoute(); });
+  });
+  routeNext.addEventListener("click", function () { resetQuiz(); show("s-quiz"); });
+  quizNext.addEventListener("click", function () { show("s-end"); });
+  document.getElementById("againBtn").addEventListener("click", function () { show("s-pick"); });
+})();
+</script>
+</body>
+</html>
