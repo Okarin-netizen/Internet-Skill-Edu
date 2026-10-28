@@ -65,7 +65,8 @@
     game: svg('<rect x="8" y="22" width="56" height="30" rx="14" ' + S + '/><path d="M22 31v12M16 37h12" ' + S + '/><circle cx="46" cy="33" r="3" fill="currentColor"/><circle cx="52" cy="41" r="3" fill="currentColor"/>'),
     cloud: svg('<path d="M20 54h34a12 12 0 0 0 0-24 18 18 0 0 0-34-4 14 14 0 0 0 0 28z" ' + S + '/>'),
     school: svg('<path d="M8 62h56M14 62V30h44v32M36 30V12l14 6-14 6M30 62V48h12v14" ' + S + '/>'),
-    back: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    back: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    hint: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.8.6 1.1 1.3 1.1 2.2h5c0-.9.3-1.6 1.1-2.2A6 6 0 0 0 12 3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
   };
 
   // ねこ・犬の絵（色の明るさ light: 0〜1）
@@ -93,6 +94,35 @@
         '<ellipse cx="36" cy="46" rx="4" ry="3" fill="' + eye + '"/>';
     }
     return '<span class="animal"><svg viewBox="0 0 72 72" aria-hidden="true">' + body + "</svg></span>";
+  }
+
+  // 段階ヒント：押すたびに1つずつヒントが増える。答えそのものは書かず、考え方の手がかりだけを出す
+  function hintBox() {
+    var box = h("div", "hints"), btn = button("hint-btn", ""), list = h("ol", "hint-list");
+    list.setAttribute("aria-live", "polite");
+    box.append(btn, list);
+    var hints = [], shown = 0;
+    function label() {
+      var t = shown >= hints.length ? "ヒントはここまで" : (shown === 0 ? "ヒントを{見|み}る" : "{次|つぎ}のヒント") + "（" + (shown + 1) + "/" + hints.length + "）";
+      btn.innerHTML = ICONS.hint + "<span>" + R(t) + "</span>";
+      btn.disabled = shown >= hints.length;
+    }
+    btn.addEventListener("click", function () {
+      if (shown >= hints.length) return;
+      list.appendChild(h("li", "", '<span class="n">' + R("ヒント") + (shown + 1) + "</span>" + R(hints[shown])));
+      shown++;
+      box.classList.remove("nudge");
+      label();
+    });
+    return {
+      el: box,
+      set: function (hs) { hints = hs || []; shown = 0; list.replaceChildren(); box.classList.remove("nudge"); box.hidden = !hints.length; label(); },
+      // まちがえたときに、ヒントボタンに目が向くようにする
+      nudge: function () {
+        if (shown >= hints.length) return;
+        box.classList.remove("nudge"); void box.offsetWidth; box.classList.add("nudge");
+      }
+    };
   }
 
   // 判定カード用の表示部品
@@ -167,7 +197,7 @@
       nodes.forEach(function (n, i) {
         n.addEventListener("click", function () {
           if (busy || i <= pos) return;
-          if (i !== pos + 1) { shake(n); ctx.say(c.hint || "{順番|じゅんばん}が{違|ちが}います。{次|つぎ}にどこを{通|とお}るか{考|かんが}えてみましょう。"); return; }
+          if (i !== pos + 1) { shake(n); ctx.miss(); ctx.say(c.hint || "{順番|じゅんばん}が{違|ちが}います。{次|つぎ}にどこを{通|とお}るか{考|かんが}えてみましょう。"); return; }
           busy = true;
           pos = i;
           nodes.forEach(function (m) { m.disabled = true; m.classList.remove("is-next"); });
@@ -231,7 +261,7 @@
         var b = button("piece", tile(i) + '<span class="num">' + (i + 1) + "</span>");
         b.setAttribute("aria-label", (i + 1) + "ばん");
         b.addEventListener("click", function () {
-          if (i !== next) { shake(b); ctx.say(c.hint); return; }
+          if (i !== next) { shake(b); ctx.miss(); ctx.say(c.hint); return; }
           slots[i].innerHTML = tile(i);
           slots[i].classList.add("filled");
           b.remove();
@@ -248,7 +278,7 @@
       c.lostOptions.forEach(function (o, k) {
         var b = button("opt", R(o));
         b.addEventListener("click", function () {
-          if (k !== c.lostAnswer) { shake(b); ctx.say(c.lostHint); return; }
+          if (k !== c.lostAnswer) { shake(b); ctx.miss(); ctx.say(c.lostHint); return; }
           asking.hidden = true;
           ctx.say(c.texts.resent);
           addPiece(lost);
@@ -326,6 +356,7 @@
           if (--left === 0) onComplete();
         } else {
           shake(el);
+          ctx.miss();
           ctx.say(cd.hint || cfg.hint || "もう{一度|いちど}{考|かんが}えてみましょう。");
         }
       });
@@ -482,6 +513,7 @@
     function show() {
       var cd = c.cards[i];
       ctx.say(cd.prompt || c.prompt);
+      if (cd.hints) ctx.hints(cd.hints);
       var card = h("div", "judge");
       card.appendChild(h("p", "count", (i + 1) + " / " + c.cards.length));
       card.appendChild(h("div", "judge-visual", cd.html));
@@ -505,6 +537,7 @@
             b.classList.add("wrong");
             b.disabled = true;
             fb.className = "feedback wrong";
+            ctx.miss();
             fb.innerHTML = R(cd.hint || c.hint || "もう{一度|いちど}{考|かんが}えてみましょう。");
           }
         });
@@ -565,8 +598,8 @@
       '<span class="unit-tag">' + m.theme.code + " " + R(m.theme.name) + "</span>" +
       '<ol class="steps" aria-label="' + R("{進|すす}み{具合|ぐあい}") + '"><li>' + R("{体験|たいけん}") + "</li><li>" + R("{考|かんが}える") + "</li><li>まとめ</li></ol></header>" +
       '<section class="screen" id="s-start"><div class="hero"><p class="eyebrow">' + m.unit.code + "</p><h1>" + R(m.unit.title) + '</h1><p class="lead">' + R(cfg.lead) + '</p><button class="btn" id="startBtn" type="button">スタート</button></div></section>' +
-      '<section class="screen" id="s-act" hidden><div class="prompt"><p id="prompt" aria-live="polite"></p></div><div class="stage" id="stage"></div><button class="btn" id="actNext" type="button" hidden>' + R("{次|つぎ}へ") + "</button></section>" +
-      '<section class="screen" id="s-quiz" hidden><div class="prompt"><p id="quizQ"></p></div><div class="choices" id="choices"></div><p class="feedback" id="quizFb" aria-live="polite"></p><button class="btn" id="quizNext" type="button" hidden>' + R("{次|つぎ}へ") + "</button></section>" +
+      '<section class="screen" id="s-act" hidden><div class="prompt"><p id="prompt" aria-live="polite"></p></div><div id="actHints"></div><div class="stage" id="stage"></div><button class="btn" id="actNext" type="button" hidden>' + R("{次|つぎ}へ") + "</button></section>" +
+      '<section class="screen" id="s-quiz" hidden><div class="prompt"><p id="quizQ"></p></div><div id="quizHints"></div><div class="choices" id="choices"></div><p class="feedback" id="quizFb" aria-live="polite"></p><button class="btn" id="quizNext" type="button" hidden>' + R("{次|つぎ}へ") + "</button></section>" +
       '<section class="screen" id="s-end" hidden><h2>' + R(cfg.summary.headline) + '</h2><div class="words">' + words + '</div><div class="end-actions"><button class="btn quiet" id="againBtn" type="button">' + R("もう{一度|いちど}やる") + "</button>" + nextLink + "</div></section>";
 
     var $ = function (id) { return document.getElementById(id); };
@@ -579,6 +612,10 @@
       window.scrollTo(0, 0);
     }
 
+    var actHints = hintBox(), quizHints = hintBox();
+    $("actHints").replaceWith(actHints.el);
+    $("quizHints").replaceWith(quizHints.el);
+
     // 体験
     var resizeFn = null;
     window.addEventListener("resize", function () { if (resizeFn && !$("s-act").hidden) resizeFn(); });
@@ -586,12 +623,15 @@
       stage: $("stage"),
       say: function (s) { $("prompt").innerHTML = R(s); },
       done: function () { $("actNext").hidden = false; $("actNext").focus({ preventScroll: true }); },
-      onResize: function (fn) { resizeFn = fn; }
+      onResize: function (fn) { resizeFn = fn; },
+      hints: function (hs) { actHints.set(hs); },
+      miss: function () { actHints.nudge(); }
     };
     function startActivity() {
       resizeFn = null;
       $("actNext").hidden = true;
       ctx.stage.replaceChildren();
+      actHints.set(cfg.activity.hints);
       show("s-act");
       A[cfg.activity.type](ctx, cfg.activity);
     }
@@ -604,6 +644,7 @@
       $("quizFb").textContent = "";
       $("quizFb").className = "feedback";
       $("quizNext").hidden = true;
+      quizHints.set(q.hints);
       var box = $("choices");
       box.replaceChildren();
       shuffle(q.options).forEach(function (o, k) {
@@ -620,6 +661,7 @@
             b.classList.add("wrong");
             b.disabled = true;
             $("quizFb").className = "feedback wrong";
+            quizHints.nudge();
             $("quizFb").innerHTML = R(q.wrong || "もう{一度|いちど}{考|かんが}えてみましょう。");
           }
         });
