@@ -133,6 +133,7 @@ h2 { font-size: 1.5rem; text-align: center; max-width: 34em; }
   top: calc(64px + 52px);
   border-top: 3px dashed var(--line);
 }
+.route.free::before { display: none; }
 .node {
   position: relative;
   display: flex; flex-direction: column; align-items: center; gap: 6px;
@@ -140,7 +141,7 @@ h2 { font-size: 1.5rem; text-align: center; max-width: 34em; }
   font-weight: 700; font-size: 1rem; line-height: 1.7; text-align: center;
 }
 .node-icon {
-  width: 104px; height: 104px; border-radius: 12px; box-sizing: border-box;
+  width: 104px; height: 104px; border-radius: 12px; box-sizing: border-box; flex: none;
   background: var(--surface); border: 2px solid var(--line);
   display: grid; place-items: center; color: var(--muted);
   transition: border-color 0.2s, background 0.2s;
@@ -171,7 +172,7 @@ h2 { font-size: 1.5rem; text-align: center; max-width: 34em; }
 .piece:hover { border-color: var(--accent); }
 .num { position: absolute; left: 4px; top: 4px; min-width: 30px; height: 30px; line-height: 30px; border-radius: 4px; background: var(--ink); color: var(--bg); font-weight: 700; font-size: 0.95rem; text-align: center; }
 .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; width: min(420px, 100%); }
-.slot { aspect-ratio: 1; max-width: 100%; border: 2px dashed var(--line); border-radius: 4px; overflow: hidden; display: grid; place-items: center; color: var(--muted); font-weight: 700; }
+.slot { aspect-ratio: 3 / 2; max-width: 100%; border: 2px dashed var(--line); border-radius: 4px; overflow: hidden; display: grid; place-items: center; color: var(--muted); font-weight: 700; }
 .slot.filled { border-style: solid; border-color: transparent; }
 .board.complete { gap: 0; }
 .board.complete .slot { border: 0; border-radius: 0; }

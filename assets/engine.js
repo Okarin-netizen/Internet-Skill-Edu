@@ -71,17 +71,18 @@
   // ねこ・犬の絵（色の明るさ light: 0〜1）
   function animal(kind, light) {
     var L = Math.round(14 + light * 76);
-    var fill = "hsl(28, 32%, " + L + "%)";
+    var fill = kind === "fox" ? "hsl(24, 70%, 48%)" : "hsl(28, 32%, " + L + "%)";
     var eye = L < 45 ? "#F4F4F4" : "#222";
     var out = "#3A3A3A";
     var body;
-    if (kind === "cat") {
+    if (kind !== "dog") {
       body =
         '<path d="M14 34L18 8l18 14z M58 34L54 8 36 22z" fill="' + fill + '" stroke="' + out + '" stroke-width="2" stroke-linejoin="round"/>' +
         '<circle cx="36" cy="40" r="24" fill="' + fill + '" stroke="' + out + '" stroke-width="2"/>' +
         '<ellipse cx="27" cy="38" rx="3" ry="5" fill="' + eye + '"/><ellipse cx="45" cy="38" rx="3" ry="5" fill="' + eye + '"/>' +
         '<path d="M33 48h6l-3 3z" fill="' + eye + '"/>' +
-        '<path d="M8 46h14M8 52l14-3M64 46H50M64 52l-14-3" stroke="' + eye + '" stroke-width="1.5" fill="none"/>';
+        '<path d="M8 46h14M8 52l14-3M64 46H50M64 52l-14-3" stroke="' + eye + '" stroke-width="1.5" fill="none"/>' +
+        (kind === "fox" ? '<path d="M22 50q14 16 28 0q-14 6-28 0z" fill="#F6F1E8"/><path d="M33 48h6l-3 3z" fill="#222"/>' : "");
     } else {
       body =
         '<ellipse cx="13" cy="36" rx="8" ry="17" fill="' + fill + '" stroke="' + out + '" stroke-width="2" transform="rotate(18 13 36)"/>' +
@@ -110,19 +111,25 @@
   // ---------- 体験の種類 ----------
   var A = {};
 
-  // リレー：光っている機械を順にタッチして届ける
+  // リレー：機械を順にタッチして届ける。free: true のときは光らせず、並びもばらばらにして自分で道順を考える
   A.relay = function (ctx, c) {
     var label = c.payload || "";
     function build() {
       ctx.say(c.texts[0]);
-      var route = h("div", "route");
+      var route = h("div", "route" + (c.free ? " free" : ""));
       route.style.setProperty("--n", c.nodes.length);
       var nodes = c.nodes.map(function (n) {
         var b = button("node", '<span class="node-icon">' + ICONS[n.icon] + "</span><span>" + R(n.label) + (n.sub ? "<br><small>" + R(n.sub) + "</small>" : "") + "</span>");
         b.disabled = true;
-        route.appendChild(b);
         return b;
       });
+      var order = nodes.map(function (_, i) { return i; });
+      if (c.free) {
+        var rest = shuffle(order.slice(1));
+        if (rest.join() === order.slice(1).join()) rest.reverse();
+        order = [0].concat(rest);
+      }
+      order.forEach(function (i) { route.appendChild(nodes[i]); });
       var packet = h("div", "packet", ICONS[c.packetIcon || "mail"] + "<span>" + R(label) + "</span>");
       packet.setAttribute("aria-hidden", "true");
       route.appendChild(packet);
@@ -149,17 +156,18 @@
       }
       function mark() {
         nodes.forEach(function (n, i) {
-          n.classList.toggle("is-next", i === pos + 1);
+          n.classList.toggle("is-next", !c.free && i === pos + 1);
           n.classList.toggle("is-done", i <= pos);
-          n.disabled = i !== pos + 1;
+          n.disabled = c.free ? i <= pos : i !== pos + 1;
         });
-        if (nodes[pos + 1]) nodes[pos + 1].focus({ preventScroll: true });
+        if (!c.free && nodes[pos + 1]) nodes[pos + 1].focus({ preventScroll: true });
       }
       ctx.onResize(function () { place(false); });
       requestAnimationFrame(function () { place(false); mark(); });
       nodes.forEach(function (n, i) {
         n.addEventListener("click", function () {
-          if (busy || i !== pos + 1) return;
+          if (busy || i <= pos) return;
+          if (i !== pos + 1) { shake(n); ctx.say(c.hint || "{順番|じゅんばん}が{違|ちが}います。{次|つぎ}にどこを{通|とお}るか{考|かんが}えてみましょう。"); return; }
           busy = true;
           pos = i;
           nodes.forEach(function (m) { m.disabled = true; m.classList.remove("is-next"); });
@@ -200,10 +208,10 @@
     '<path d="M194 122l31-24 31 24z" fill="#B5523B"/><rect x="218" y="138" width="14" height="22" fill="#7A5236"/>' +
     '<path d="M20 175h60M110 185h50" stroke="#5E9450" stroke-width="4"/>';
   A.order = function (ctx, c) {
-    var cols = 3, n = 6, W = 100;
+    var cols = 3, rows = 3, n = cols * rows, W = 100, H = 200 / rows;
     function tile(i) {
-      var x = (i % cols) * W, y = Math.floor(i / cols) * W;
-      return '<svg viewBox="' + x + " " + y + " " + W + " " + W + '" aria-hidden="true">' + SCENE + "</svg>";
+      var x = (i % cols) * W, y = Math.floor(i / cols) * H;
+      return '<svg viewBox="' + x + " " + y + " " + W + " " + H + '" aria-hidden="true">' + SCENE + "</svg>";
     }
     ctx.say(c.texts[0]);
     var wrap = h("div", "stage");
@@ -214,10 +222,12 @@
     send.addEventListener("click", function () {
       ctx.say(c.texts[1]);
       var board = h("div", "board"), slots = [], tray = h("div", "tray"), next = 0;
-      for (var i = 0; i < n; i++) { var s = h("div", "slot", String(i + 1)); board.appendChild(s); slots.push(s); }
-      var order = shuffle([0, 1, 2, 3, 4, 5]);
-      if (order.join() === "0,1,2,3,4,5") order.reverse();
-      order.forEach(function (i) {
+      board.style.setProperty("--rows", rows);
+      for (var i = 0; i < n; i++) { var s = h("div", "slot"); board.appendChild(s); slots.push(s); }
+      var lost = c.lost == null ? -1 : c.lost;
+      var asking = h("div", "opts");
+      asking.hidden = true;
+      function addPiece(i) {
         var b = button("piece", tile(i) + '<span class="num">' + (i + 1) + "</span>");
         b.setAttribute("aria-label", (i + 1) + "ばん");
         b.addEventListener("click", function () {
@@ -226,6 +236,7 @@
           slots[i].classList.add("filled");
           b.remove();
           next++;
+          if (next === lost) { ctx.say(c.texts.lost); asking.hidden = false; return; }
           if (next === n) {
             board.classList.add("complete");
             ctx.say(c.texts[2]);
@@ -233,8 +244,20 @@
           }
         });
         tray.appendChild(b);
+      }
+      c.lostOptions.forEach(function (o, k) {
+        var b = button("opt", R(o));
+        b.addEventListener("click", function () {
+          if (k !== c.lostAnswer) { shake(b); ctx.say(c.lostHint); return; }
+          asking.hidden = true;
+          ctx.say(c.texts.resent);
+          addPiece(lost);
+        });
+        asking.appendChild(b);
       });
-      wrap.replaceChildren(h("p", "caption", R("{届|とど}いたパケット")), tray, h("p", "caption", R("{組|く}み{立|た}て")), board);
+      var order = shuffle(slots.map(function (_, i) { return i; }).filter(function (i) { return i !== lost; }));
+      order.forEach(addPiece);
+      wrap.replaceChildren(h("p", "caption", R("{届|とど}いたパケット")), tray, asking, h("p", "caption", R("{組|く}み{立|た}て")), board);
     });
   };
 
@@ -303,7 +326,7 @@
           if (--left === 0) onComplete();
         } else {
           shake(el);
-          ctx.say(cd.hint || cd.why || "もう{一度|いちど}{考|かんが}えてみましょう。");
+          ctx.say(cd.hint || cfg.hint || "もう{一度|いちど}{考|かんが}えてみましょう。");
         }
       });
       bins.appendChild(b);
@@ -326,7 +349,7 @@
   };
 
   // AIの学習：例を学ばせて、新しい写真を当てさせる
-  var NAMES = { cat: "ねこ", dog: "{犬|いぬ}" };
+  var NAMES = { cat: "ねこ", dog: "{犬|いぬ}", fox: "きつね" };
   A.train = function (ctx, c) {
     var w = c.lightWeight || 3;
     function predict(a) {
@@ -583,7 +606,7 @@
       $("quizNext").hidden = true;
       var box = $("choices");
       box.replaceChildren();
-      q.options.forEach(function (o, k) {
+      shuffle(q.options).forEach(function (o, k) {
         var b = button("choice", '<span class="mark" aria-hidden="true">' + "ABCD"[k] + "</span><span>" + R(o.t) + "</span>");
         b.addEventListener("click", function () {
           if (o.correct) {
