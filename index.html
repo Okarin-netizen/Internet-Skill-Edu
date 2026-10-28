@@ -6,7 +6,7 @@
 <title>インターネットとAIを学ぶ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@900&display=swap">
 <link rel="stylesheet" href="assets/ui.css">
 </head>
 <body>
@@ -27,7 +27,7 @@
   CATALOG.forEach(function (t) {
     var sec = document.createElement("section");
     sec.className = "theme";
-    sec.innerHTML = '<h2><span class="code">' + t.code + "</span><span>" + R(t.name) + '</span></h2><div class="unit-list"></div>';
+    sec.innerHTML = '<h2><span class="code">' + t.code + "</span><span class=\"marker\">" + R(t.name) + '</span></h2><div class="unit-list"></div>';
     var list = sec.querySelector(".unit-list");
     t.units.forEach(function (u) {
       var a = document.createElement("a");
