@@ -14,6 +14,7 @@
   <header class="portal-head">
     <h1 id="title"></h1>
     <p class="lead" id="lead"></p>
+    <div class="portal-tools"><div class="progress" id="progress"></div><span id="soundSlot"></span></div>
   </header>
 </main>
 <script src="assets/units.js"></script>
@@ -24,6 +25,11 @@
   document.getElementById("title").innerHTML = R("インターネットとAIを{学|まな}ぶ");
   document.getElementById("lead").innerHTML = R("{学|まな}びたい{単元|たんげん}を{選|えら}んでください。1つの{単元|たんげん}は{約|やく}10{分|ぷん}です。");
   var app = document.getElementById("app");
+  // クリアの記録（その端末のブラウザだけに残る）と、次にやる単元
+  var done = Unit.cleared(), total = 0, count = 0, nextCode = null;
+  CATALOG.forEach(function (t) { t.units.forEach(function (u) { total++; if (done[u.code]) count++; else if (!nextCode) nextCode = u.code; }); });
+  document.getElementById("progress").innerHTML = "<span>" + R("{全部|ぜんぶ}で") + total + R("{単元|たんげん}のうち ") + count + R("{単元|たんげん}クリア") + '</span><span class="bar" aria-hidden="true"><span style="width:' + (100 * count / total) + '%"></span></span>';
+  document.getElementById("soundSlot").replaceWith(Unit.soundToggle());
   CATALOG.forEach(function (t) {
     var sec = document.createElement("section");
     sec.className = "theme";
@@ -33,7 +39,12 @@
       var a = document.createElement("a");
       a.className = "unit-link";
       a.href = "units/" + u.dir + "/index.html";
-      a.innerHTML = '<span class="code">' + u.code + "</span><b>" + R(u.title) + '</b><span class="desc">' + R(u.desc) + '</span><span class="time">' + R("{約|やく}10{分|ぷん}") + "</span>";
+      var rec = done[u.code];
+      a.innerHTML = '<span class="code">' + u.code + "</span><b>" + R(u.title) + '</b><span class="desc">' + R(u.desc) + '</span><span class="time">' + R("{約|やく}10{分|ぷん}") + "</span>" +
+        (rec ? '<span class="done-stamp">' + (rec.nomiss ? R("ノーミス") : R("クリア")) + "</span>" : "") +
+        (u.code === nextCode && count > 0 ? '<span class="next-tag">' + R("つぎはここ") + "</span>" : "");
+      if (rec) a.classList.add("done");
+      if (u.code === nextCode && count > 0) a.classList.add("next");
       list.appendChild(a);
     });
     app.appendChild(sec);
