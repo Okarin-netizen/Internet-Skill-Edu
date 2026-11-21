@@ -14,12 +14,18 @@
   --accent-ink: #FFFFFF;
   --accent-soft: #E8EEFB;
   --marker: #FFE45C;
+  --pen: #D2452F;
   --good: #1F8A55;
   --good-bg: #E6F5EC;
   --bad: #B4432B;
   --bad-bg: #FBEAE5;
   --r: 3px;
   --font: "BIZ UDPGothic", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  /* 手ごたえの調整値（engine.js の FEEL と合わせる） */
+  --press: 0.96;      /* 押したときの縮み */
+  --pop-ms: 280ms;    /* 正解ではずむ長さ */
+  --circle-ms: 380ms; /* 赤ペンの○を描く長さ */
+  --enter-ms: 180ms;  /* 画面が切りかわる長さ */
   --display: "Zen Kaku Gothic New", "BIZ UDPGothic", "Hiragino Sans", sans-serif;
 }
 @media (prefers-color-scheme: dark) {
@@ -27,6 +33,7 @@
     --bg: #15202F; --grid: #1E2B3D; --margin: #6B3A44; --surface: #1B2738; --ink: #E8EDF5; --muted: #A3B0C4;
     --line: #8597B5; --faint: #34445C; --accent: #7FA8F5; --accent-ink: #0E1A30; --accent-soft: #22345A;
     --marker: #8A7414; --good: #7CCB98; --good-bg: #1A3326; --bad: #EE9A82; --bad-bg: #3C2420;
+    --pen: #F0866F;
     color-scheme: dark;
   }
 }
@@ -34,6 +41,7 @@
   --bg: #15202F; --grid: #1E2B3D; --margin: #6B3A44; --surface: #1B2738; --ink: #E8EDF5; --muted: #A3B0C4;
   --line: #8597B5; --faint: #34445C; --accent: #7FA8F5; --accent-ink: #0E1A30; --accent-soft: #22345A;
   --marker: #8A7414; --good: #7CCB98; --good-bg: #1A3326; --bad: #EE9A82; --bad-bg: #3C2420;
+  --pen: #F0866F;
   color-scheme: dark;
 }
 
@@ -73,6 +81,9 @@ svg { display: block; }
 .steps li { min-width: 72px; text-align: center; border-top: 4px solid var(--faint); padding-top: 2px; }
 .steps li.on { border-color: var(--accent); color: var(--ink); font-weight: 700; }
 .steps li.done { border-color: var(--good); }
+.sound-btn { display: inline-flex; align-items: center; gap: 6px; min-height: 48px; padding: 0 12px; border: 1px solid var(--faint); border-radius: var(--r); background: var(--surface); color: var(--muted); font-size: 0.8rem; font-weight: 700; }
+.sound-btn svg { width: 20px; height: 20px; }
+.sound-btn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
 
 /* ---------- ボタン ---------- */
 button { font: inherit; color: inherit; cursor: pointer; }
@@ -89,6 +100,27 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outlin
 .btn:hover { filter: brightness(1.08); }
 .btn.quiet { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
 .btn:disabled { opacity: 0.45; filter: none; }
+
+/* ---------- 手ごたえ ---------- */
+/* 押した瞬間に沈む：どのボタン・カードも同じ */
+button, .btn, .unit-link { transition: transform 70ms ease-out, border-color 0.15s, background-color 0.15s; -webkit-tap-highlight-color: transparent; }
+button:active:not(:disabled), .btn:active, .unit-link:active { transform: scale(var(--press)); transition-duration: 30ms; }
+/* 正解：一瞬止めて（ヒットストップ）から、はずむ */
+.pop { animation: pop var(--pop-ms) cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes pop { 0%, 18% { transform: scale(0.94); } 55% { transform: scale(1.06); } 100% { transform: scale(1); } }
+@keyframes pop-sm { 0%, 18% { transform: scale(0.97); } 55% { transform: scale(1.015); } 100% { transform: scale(1); } }
+/* 赤ペンの○ */
+.choice, .opt, .sel-item, .choice .mark { position: relative; }
+.choice .mark .pen-circle { inset: -10px; width: calc(100% + 20px); height: calc(100% + 20px); }
+.pen-circle { position: absolute; inset: -8px -10px; width: calc(100% + 20px); height: calc(100% + 16px); pointer-events: none; overflow: visible; }
+.pen-circle path { fill: none; stroke: var(--pen); stroke-width: 3.5; stroke-linecap: round; vector-effect: non-scaling-stroke; stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw var(--circle-ms) ease-out 60ms forwards; opacity: 0.9; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+/* 画面の切りかわりは短く */
+.screen.enter { animation: enter var(--enter-ms) ease-out; }
+@keyframes enter { from { opacity: 0; transform: translateY(8px); } }
+/* 指示文が変わったら、マーカーで一瞬知らせる */
+.prompt.flash { animation: flash 0.6s ease-out; }
+@keyframes flash { 0% { background-color: color-mix(in srgb, var(--marker) 55%, var(--surface)); } 100% { background-color: var(--surface); } }
 
 /* ---------- 画面 ---------- */
 .screen { display: flex; flex-direction: column; align-items: center; gap: 28px; }
@@ -142,7 +174,7 @@ h2 { font-size: 1.5rem; text-align: center; max-width: 34em; }
 
 /* 揺れ（まちがい） */
 .shake { animation: shake 0.35s; }
-@keyframes shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+@keyframes shake { 15% { transform: translateX(-8px); } 40% { transform: translateX(6px); } 65% { transform: translateX(-3px); } 85% { transform: translateX(1px); } }
 
 /* ---------- 体験：リレー ---------- */
 .route {
@@ -318,6 +350,13 @@ h2 { font-size: 1.5rem; text-align: center; max-width: 34em; }
 .feedback.wrong { color: var(--bad); }
 
 /* ---------- まとめ ---------- */
+/* クリアのはんこ */
+.stamps { display: flex; gap: 14px; align-items: center; justify-content: center; min-height: 72px; }
+.stamp { display: inline-block; font-family: var(--display); font-weight: 900; font-size: 1.6rem; line-height: 1.6; letter-spacing: 0.12em; color: var(--pen); border: 3.5px solid var(--pen); border-radius: 6px; padding: 2px 18px 0 22px; transform: rotate(-8deg); opacity: 0.92; }
+.stamp.sub { font-size: 1rem; border-width: 2.5px; padding: 0 10px 0 14px; transform: rotate(6deg); }
+.stamps.go .stamp { animation: stamp 0.32s cubic-bezier(.2, .9, .3, 1.2) both; }
+.stamps.go .stamp.sub { animation-delay: 0.35s; --rot: 6deg; }
+@keyframes stamp { 0% { opacity: 0; transform: scale(1.8) rotate(var(--rot, -8deg)); } 60% { opacity: 1; transform: scale(0.94) rotate(var(--rot, -8deg)); } 100% { opacity: 0.92; transform: scale(1) rotate(var(--rot, -8deg)); } }
 .words { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; width: 100%; max-width: 900px; }
 .word { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px 20px; display: flex; gap: 16px; align-items: center; }
 .word .node-icon { width: 72px; height: 72px; border-radius: var(--r); flex: none; }
@@ -341,6 +380,15 @@ h2 { font-size: 1.5rem; text-align: center; max-width: 34em; }
 .unit-link b { font-size: 1.05rem; line-height: 1.8; }
 .unit-link span.desc { font-size: 0.85rem; color: var(--muted); line-height: 1.8; }
 .unit-link .time { margin-top: auto; font-size: 0.75rem; color: var(--muted); }
+.unit-link { position: relative; }
+.unit-link.done { border-color: var(--good); }
+.unit-link .done-stamp { position: absolute; right: 10px; top: 10px; font-family: var(--display); font-weight: 900; font-size: 0.75rem; line-height: 1.6; letter-spacing: 0.08em; color: var(--pen); border: 2px solid var(--pen); border-radius: 4px; padding: 0 6px 0 8px; transform: rotate(-8deg); }
+.unit-link.next { border: 2px solid var(--accent); box-shadow: 4px 4px 0 var(--accent-soft); }
+.unit-link .next-tag { align-self: flex-start; font-size: 0.75rem; font-weight: 700; background: linear-gradient(transparent 50%, var(--marker) 50%); }
+.progress { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-weight: 700; }
+.progress .bar { flex: 1 1 200px; max-width: 360px; height: 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); overflow: hidden; }
+.progress .bar span { display: block; height: 100%; background: var(--accent); transition: width 0.6s ease-out; }
+.portal-tools { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 
 /* ---------- 狭い画面 ---------- */
 @media (max-width: 860px) {
@@ -363,11 +411,14 @@ h2 { font-size: 1.5rem; text-align: center; max-width: 34em; }
   .devices { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .cand { grid-template-columns: minmax(0, 1fr) 4em; }
   .cand .bar { grid-column: 1 / -1; grid-row: 2; }
+  .opt.pop, .choice.pop, .pop.devices, .pop.select-grid, .pop.sentence, .pop.reveal { animation-name: pop-sm; }
 }
 @media (max-width: 480px) {
   .unit-list { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) {
   .packet { transition: none; }
-  .node.is-next .node-icon, .caret, .shake, .hints.nudge .hint-btn { animation: none; }
+  .node.is-next .node-icon, .caret, .shake, .hints.nudge .hint-btn, .pop, .screen.enter, .prompt.flash, .stamps.go .stamp { animation: none; }
+  .pen-circle path { animation: none; stroke-dashoffset: 0; }
+  button:active:not(:disabled), .btn:active, .unit-link:active { transform: none; }
 }

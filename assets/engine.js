@@ -19,8 +19,76 @@
     for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
     return a;
   }
-  function shake(el) { el.classList.remove("shake"); void el.offsetWidth; el.classList.add("shake"); }
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ---------- 手ごたえ（任天堂らしい「さわって気持ちいい」反応） ----------
+  // 調整したい数値はここにまとめる（アニメーションの長さは ui.css の --pop-ms などと合わせる）
+  var FEEL = {
+    volume: 0.12,      // 効果音の大きさ（0〜1）
+    clearDelay: 180    // はんこが押されてから鳴るまで（ミリ秒）
+  };
+  function restart(el, cls) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+  // まちがい：小さく揺らして低い音
+  function shake(el) { restart(el, "shake"); sound("miss"); }
+  // 正解：一瞬止めてから、はずませる（見た目だけ）
+  function pop(el) { if (el) restart(el, "pop"); }
+  // 正解：先生の赤ペンのような○を描く
+  function circle(el) {
+    if (!el || el.querySelector(".pen-circle")) return;
+    el.insertAdjacentHTML("beforeend", '<svg class="pen-circle" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M58 6C30 4 6 18 5 48c-1 30 26 47 52 46 27-1 39-20 38-44C94 24 76 7 48 9"/></svg>');
+  }
+  function good(el, withCircle) { pop(el); if (withCircle) circle(el); sound("good"); }
+
+  // 保存（その端末のブラウザだけに残す。使えないときは何もしない）
+  var store = {
+    get: function (k, d) { try { var v = localStorage.getItem("ise." + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set: function (k, v) { try { localStorage.setItem("ise." + k, JSON.stringify(v)); } catch (e) { /* 保存できなくても動く */ } }
+  };
+
+  // 効果音：音声ファイルを使わず、その場で短い音を作る。最初は「切」
+  var audio = null;
+  function soundOn() { return store.get("sound", false) === true; }
+  function tone(freq, start, len, type, vol) {
+    var t = audio.currentTime + start, o = audio.createOscillator(), g = audio.createGain();
+    o.type = type || "sine";
+    o.frequency.setValueAtTime(freq, t);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(FEEL.volume * (vol || 1), t + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+    o.connect(g); g.connect(audio.destination);
+    o.start(t); o.stop(t + len + 0.02);
+  }
+  function sound(kind) {
+    if (!soundOn()) return;
+    try {
+      audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+      if (audio.state === "suspended") audio.resume();
+      if (kind === "tap") tone(1400, 0, 0.04, "triangle", 0.35);
+      else if (kind === "good") { tone(988, 0, 0.09, "triangle"); tone(1480, 0.07, 0.16, "triangle"); }
+      else if (kind === "miss") tone(196, 0, 0.14, "sine", 0.8);
+      else if (kind === "clear") [784, 988, 1175, 1568].forEach(function (f, i) { tone(f, i * 0.08, i === 3 ? 0.35 : 0.1, "triangle"); });
+    } catch (e) { /* 音が出せなくても動く */ }
+  }
+  // どのボタンも、押した瞬間に小さく鳴る
+  document.addEventListener("pointerdown", function (e) {
+    var b = e.target.closest && e.target.closest("button, a.btn, a.unit-link");
+    if (b && !b.disabled && !b.classList.contains("sound-btn")) sound("tap");
+  });
+  function soundToggle() {
+    var b = button("sound-btn", "");
+    function label() { var on = soundOn(); b.setAttribute("aria-pressed", String(on)); b.innerHTML = ICONS[on ? "soundOn" : "soundOff"] + "<span>" + R("{音|おと}：") + (on ? R("{入|いり}") : R("{切|きり}")) + "</span>"; }
+    b.addEventListener("click", function () { store.set("sound", !soundOn()); label(); sound("good"); });
+    label();
+    return b;
+  }
+
+  // クリアの記録：{ "A1": { nomiss: true } } の形で残す
+  function cleared() { return store.get("cleared", {}) || {}; }
+  function markCleared(code, nomiss) {
+    var c = cleared(), was = c[code];
+    c[code] = { nomiss: !!(nomiss || (was && was.nomiss)) };
+    store.set("cleared", c);
+  }
 
   // ---------- アイコン（線画・72×72） ----------
   var S = 'fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"';
@@ -52,6 +120,7 @@
     unknown: svg('<circle cx="36" cy="22" r="11" ' + S + '/><path d="M14 62c2-14 12-20 22-20s20 6 22 20" ' + S + '/><path d="M32 18a4 4 0 1 1 5 4v3" ' + S + '/>'),
     teacher: svg('<rect x="34" y="8" width="30" height="22" rx="2" ' + S + '/><circle cx="20" cy="26" r="9" ' + S + '/><path d="M4 62c2-12 8-18 16-18s14 6 16 18M28 40l10-14" ' + S + '/>'),
     home: svg('<path d="M10 34L36 12l26 22M18 28v32h36V28" ' + S + '/><path d="M30 60V44h12v16" ' + S + '/>'),
+    check: svg('<circle cx="36" cy="36" r="26" ' + S + '/><path d="M24 37l8 8 16-18" ' + S + '/>'),
     lock: svg('<rect x="14" y="32" width="44" height="30" rx="4" ' + S + '/><path d="M24 32V22a12 12 0 0 1 24 0v10" ' + S + '/><circle cx="36" cy="47" r="4" fill="currentColor"/>'),
     link: svg('<path d="M30 42l12-12M26 34l-6 6a8 8 0 0 0 12 12l6-6M46 38l6-6a8 8 0 0 0-12-12l-6 6" ' + S + '/>'),
     warn: svg('<path d="M36 10L64 60H8z" ' + S + '/><path d="M36 28v14" ' + S + '/><circle cx="36" cy="51" r="3" fill="currentColor"/>'),
@@ -66,6 +135,8 @@
     cloud: svg('<path d="M20 54h34a12 12 0 0 0 0-24 18 18 0 0 0-34-4 14 14 0 0 0 0 28z" ' + S + '/>'),
     school: svg('<path d="M8 62h56M14 62V30h44v32M36 30V12l14 6-14 6M30 62V48h12v14" ' + S + '/>'),
     back: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    soundOn: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zM16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    soundOff: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zM17 10l4 4M21 10l-4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     hint: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.8.6 1.1 1.3 1.1 2.2h5c0-.9.3-1.6 1.1-2.2A6 6 0 0 0 12 3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
   };
 
@@ -204,6 +275,8 @@
           place(!reduceMotion);
           setTimeout(function () {
             busy = false;
+            pop(nodes[pos].querySelector(".node-icon"));
+            sound("good");
             ctx.say(c.texts[pos]);
             if (pos === last) {
               nodes.forEach(function (m, k) { m.classList.toggle("is-done", k < last); });
@@ -264,11 +337,14 @@
           if (i !== next) { shake(b); ctx.miss(); ctx.say(c.hint); return; }
           slots[i].innerHTML = tile(i);
           slots[i].classList.add("filled");
+          pop(slots[i]);
+          sound("good");
           b.remove();
           next++;
           if (next === lost) { ctx.say(c.texts.lost); asking.hidden = false; return; }
           if (next === n) {
             board.classList.add("complete");
+            pop(board);
             ctx.say(c.texts[2]);
             ctx.done();
           }
@@ -280,6 +356,7 @@
         b.addEventListener("click", function () {
           if (k !== c.lostAnswer) { shake(b); ctx.miss(); ctx.say(c.lostHint); return; }
           asking.hidden = true;
+          sound("good");
           ctx.say(c.texts.resent);
           addPiece(lost);
         });
@@ -328,6 +405,7 @@
         ctx.done();
         return;
       }
+      pop(grid);
       step++;
       render();
     });
@@ -351,6 +429,7 @@
           // 箱の中は押せない表示用の札にする（箱のどこを押しても箱が反応するように）
           b.querySelector(".bin-items").appendChild(h("span", "card placed", el.innerHTML));
           el.remove();
+          good(b);
           ctx.say(cd.why || "{正解|せいかい}です。");
           selected = null;
           if (--left === 0) onComplete();
@@ -369,6 +448,7 @@
         if (selected) selected.el.classList.remove("sel");
         selected = { el: e, card: cd };
         e.classList.add("sel");
+        pop(e);
       });
       tray.appendChild(e);
     });
@@ -401,6 +481,8 @@
           b.dataset.done = "1";
           var p = predict(a);
           b.classList.add(p === a.kind ? "right" : "wrong");
+          pop(b);
+          sound(p === a.kind ? "good" : "miss");
           b.querySelector(".ai-says").innerHTML = R("AIの{答|こた}え：") + "<b>" + R(NAMES[p]) + "</b>";
           if (--left === 0) { ctx.say(c.texts.after); ctx.done(); }
         });
@@ -457,6 +539,7 @@
       text += o.w;
       node = o.next || null;
       render();
+      pop(line);
       if (node) { ctx.say(c.texts.mid); return; }
       auto.hidden = true;
       again.hidden = false;
@@ -498,9 +581,12 @@
         var on = x.el.getAttribute("aria-pressed") === "true";
         x.el.dataset.checked = "1";
         x.el.classList.add(on === x.it.correct ? "right" : "wrong");
+        if (on === x.it.correct) circle(x.el);
         x.el.querySelector(".why").hidden = false;
       });
       check.hidden = true;
+      pop(grid);
+      sound("good");
       ctx.say(c.texts.after);
       ctx.done();
     });
@@ -528,6 +614,7 @@
         b.addEventListener("click", function () {
           if (ans.indexOf(k) >= 0) {
             b.classList.add("right");
+            good(b, true);
             opts.querySelectorAll("button").forEach(function (x) { x.disabled = true; });
             fb.className = "feedback right";
             fb.innerHTML = R(cd.why);
@@ -536,6 +623,7 @@
           } else {
             b.classList.add("wrong");
             b.disabled = true;
+            shake(b);
             fb.className = "feedback wrong";
             ctx.miss();
             fb.innerHTML = R(cd.hint || c.hint || "もう{一度|いちど}{考|かんが}えてみましょう。");
@@ -566,6 +654,7 @@
         b.classList.add("open");
         b.querySelector(".back").hidden = false;
         b.querySelector(".hint").hidden = true;
+        pop(b);
         if (--left === 0) { ctx.say(c.texts.after); ctx.done(); }
       });
       list.appendChild(b);
@@ -596,18 +685,20 @@
     app.innerHTML =
       '<header class="topbar"><a class="back" href="../../index.html">' + ICONS.back + R("{一覧|いちらん}") + "</a>" +
       '<span class="unit-tag">' + m.theme.code + " " + R(m.theme.name) + "</span>" +
-      '<ol class="steps" aria-label="' + R("{進|すす}み{具合|ぐあい}") + '"><li>' + R("{体験|たいけん}") + "</li><li>" + R("{考|かんが}える") + "</li><li>まとめ</li></ol></header>" +
+      '<ol class="steps" aria-label="' + R("{進|すす}み{具合|ぐあい}") + '"><li>' + R("{体験|たいけん}") + "</li><li>" + R("{考|かんが}える") + "</li><li>まとめ</li></ol><span id=\"soundSlot\"></span></header>" +
       '<section class="screen" id="s-start"><div class="hero"><p class="eyebrow">' + m.unit.code + "</p><h1>" + R(m.unit.title) + '</h1><p class="lead">' + R(cfg.lead) + '</p><button class="btn" id="startBtn" type="button">スタート</button></div></section>' +
       '<section class="screen" id="s-act" hidden><div class="prompt"><p id="prompt" aria-live="polite"></p></div><div id="actHints"></div><div class="stage" id="stage"></div><button class="btn" id="actNext" type="button" hidden>' + R("{次|つぎ}へ") + "</button></section>" +
-      '<section class="screen" id="s-quiz" hidden><div class="prompt"><p id="quizQ"></p></div><div id="quizHints"></div><div class="choices" id="choices"></div><p class="feedback" id="quizFb" aria-live="polite"></p><button class="btn" id="quizNext" type="button" hidden>' + R("{次|つぎ}へ") + "</button></section>" +
-      '<section class="screen" id="s-end" hidden><h2>' + R(cfg.summary.headline) + '</h2><div class="words">' + words + '</div><div class="end-actions"><button class="btn quiet" id="againBtn" type="button">' + R("もう{一度|いちど}やる") + "</button>" + nextLink + "</div></section>";
+      '<section class="screen" id="s-quiz" hidden><p class="count" id="quizCount"></p><div class="prompt"><p id="quizQ"></p></div><div id="quizHints"></div><div class="choices" id="choices"></div><p class="feedback" id="quizFb" aria-live="polite"></p><button class="btn" id="quizNext" type="button" hidden>' + R("{次|つぎ}へ") + "</button></section>" +
+      '<section class="screen" id="s-end" hidden><div class="stamps" id="stamps" aria-live="polite"></div><h2>' + R(cfg.summary.headline) + '</h2><div class="words">' + words + '</div><div class="end-actions"><button class="btn quiet" id="againBtn" type="button">' + R("もう{一度|いちど}やる") + "</button>" + nextLink + "</div></section>";
 
     var $ = function (id) { return document.getElementById(id); };
+    $("soundSlot").replaceWith(soundToggle());
     var screens = ["s-start", "s-act", "s-quiz", "s-end"];
     var steps = app.querySelectorAll(".steps li");
     function show(id) {
       var idx = screens.indexOf(id) - 1;
       screens.forEach(function (s) { $(s).hidden = s !== id; });
+      restart($(id), "enter");
       steps.forEach(function (li, i) { li.className = i < idx ? "done" : i === idx ? "on" : ""; });
       window.scrollTo(0, 0);
     }
@@ -621,14 +712,21 @@
     window.addEventListener("resize", function () { if (resizeFn && !$("s-act").hidden) resizeFn(); });
     var ctx = {
       stage: $("stage"),
-      say: function (s) { $("prompt").innerHTML = R(s); },
+      say: function (s) {
+        var html = R(s);
+        if ($("prompt").innerHTML === html) return;
+        $("prompt").innerHTML = html;
+        restart($("prompt").parentNode, "flash");
+      },
       done: function () { $("actNext").hidden = false; $("actNext").focus({ preventScroll: true }); },
       onResize: function (fn) { resizeFn = fn; },
       hints: function (hs) { actHints.set(hs); },
-      miss: function () { actHints.nudge(); }
+      miss: function () { misses++; actHints.nudge(); }
     };
+    var misses = 0;
     function startActivity() {
       resizeFn = null;
+      misses = 0;
       $("actNext").hidden = true;
       ctx.stage.replaceChildren();
       actHints.set(cfg.activity.hints);
@@ -641,6 +739,7 @@
     function renderQuiz() {
       var q = cfg.quiz[qi];
       $("quizQ").innerHTML = R(q.q);
+      $("quizCount").textContent = (qi + 1) + " / " + cfg.quiz.length;
       $("quizFb").textContent = "";
       $("quizFb").className = "feedback";
       $("quizNext").hidden = true;
@@ -652,6 +751,8 @@
         b.addEventListener("click", function () {
           if (o.correct) {
             b.classList.add("right");
+            good(b);
+            circle(b.querySelector(".mark"));
             box.querySelectorAll("button").forEach(function (x) { x.disabled = true; });
             $("quizFb").className = "feedback right";
             $("quizFb").innerHTML = R(q.right || "{正解|せいかい}です。");
@@ -660,6 +761,8 @@
           } else {
             b.classList.add("wrong");
             b.disabled = true;
+            shake(b);
+            misses++;
             $("quizFb").className = "feedback wrong";
             quizHints.nudge();
             $("quizFb").innerHTML = R(q.wrong || "もう{一度|いちど}{考|かんが}えてみましょう。");
@@ -673,10 +776,20 @@
     $("actNext").addEventListener("click", function () { qi = 0; renderQuiz(); show("s-quiz"); });
     $("quizNext").addEventListener("click", function () {
       qi++;
-      if (qi < cfg.quiz.length) { renderQuiz(); window.scrollTo(0, 0); } else show("s-end");
+      if (qi < cfg.quiz.length) { renderQuiz(); window.scrollTo(0, 0); } else finish();
     });
     $("againBtn").addEventListener("click", startActivity);
+
+    // まとめ：はんこを押して、クリアを記録する
+    function finish() {
+      var nomiss = misses === 0;
+      markCleared(m.unit.code, nomiss);
+      $("stamps").innerHTML = '<span class="stamp">' + R("クリア") + "</span>" + (nomiss ? '<span class="stamp sub">' + R("ノーミス") + "</span>" : "");
+      show("s-end");
+      restart($("stamps"), "go");
+      setTimeout(function () { sound("clear"); }, reduceMotion ? 0 : FEEL.clearDelay);
+    }
   }
 
-  window.Unit = { run: run, ui: ui, R: R, plain: plain, icons: ICONS };
+  window.Unit = { run: run, ui: ui, R: R, plain: plain, icons: ICONS, cleared: cleared, soundToggle: soundToggle };
 })();
