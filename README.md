@@ -75,3 +75,7 @@
 ## 公開
 
 GitHub Pagesの有効化：リポジトリの Settings → Pages → Source を「Deploy from a branch」、Branch を `main` / `(root)` にして保存します。
+
+## 要求の一覧
+
+この制作物の目的・要求・受入条件・データの扱いは [docs/requirements.md](docs/requirements.md) にまとめています。直す前や、点検で指摘を受けたときは、まずここを更新します。
